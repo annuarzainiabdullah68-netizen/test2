@@ -862,7 +862,7 @@ export default function ProjBuild() {
                     onDoubleClick={(e) => { e.stopPropagation(); handleOpenGroupModal(node.id); }} 
                     onDragOver={handleCanvasDragOver}
                     onDrop={(e) => handleCanvasDrop(e, node.id)}
-                    className="bg-white/95 dark:bg-[#121824]/95 p-1 rounded-xl border border-slate-200 dark:border-slate-800/80 min-w-[220px] shadow-2xl hover:border-slate-350 dark:hover:border-slate-700 transition-colors"
+                    className="bg-white/95 dark:bg-[#121824]/95 pt-1 px-1 pb-4 rounded-xl border border-slate-200 dark:border-slate-800/80 min-w-[220px] shadow-2xl hover:border-slate-350 dark:hover:border-slate-700 transition-colors"
                   >
                     <div className="space-y-0.5 min-h-[30px] flex flex-col">
                       {node.rows.map((row, rowIndex) => (
