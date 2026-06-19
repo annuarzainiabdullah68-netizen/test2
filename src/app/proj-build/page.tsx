@@ -588,9 +588,19 @@ export default function ProjBuild() {
     setModalRows(newRows);
   };
 
-  const handleEditSection = (e: React.MouseEvent, nodeId: string) => {
+  const nodeHasChildren = (nodeId: string) => {
+    const node = nodes[nodeId];
+    if (!node) return false;
+    if (node.type === 'section') {
+      return (node.rows && node.rows.length > 0) || false;
+    }
+    return Object.values(nodes).some(n => n.parentId === nodeId);
+  };
+
+  const handleEditNode = (e: React.MouseEvent, nodeId: string) => {
     e.stopPropagation();
     const node = nodes[nodeId];
+    if (!node) return;
     let execMode = node.exec || '0';
     let manualReq = '';
     if (execMode.startsWith('Manual:')) {
@@ -600,13 +610,15 @@ export default function ProjBuild() {
     setEditNodeModal({ isOpen: true, nodeId: nodeId, name: node.name || '', exec: execMode, manualReq: manualReq });
   };
 
-  const saveEditSection = () => {
+  const saveEditNode = () => {
     if (editNodeModal.nodeId) {
       setNodes(prev => {
         const next = JSON.parse(JSON.stringify(prev));
         if (next[editNodeModal.nodeId!]) {
           next[editNodeModal.nodeId!].name = editNodeModal.name;
-          next[editNodeModal.nodeId!].exec = editNodeModal.exec === 'Manual' ? `Manual: ${editNodeModal.manualReq}` : editNodeModal.exec;
+          if (next[editNodeModal.nodeId!].type === 'section') {
+            next[editNodeModal.nodeId!].exec = editNodeModal.exec === 'Manual' ? `Manual: ${editNodeModal.manualReq}` : editNodeModal.exec;
+          }
         }
         return next;
       });
@@ -614,19 +626,20 @@ export default function ProjBuild() {
     setEditNodeModal({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' });
   };
 
-  const deleteSection = () => {
+  const deleteNode = () => {
     if (editNodeModal.nodeId) {
       const node = nodes[editNodeModal.nodeId];
-      if (node && node.rows && node.rows.length > 0) {
-        alert("Cannot delete section with rows. Empty the section first.");
-        return; 
+      if (node) {
+        if (nodeHasChildren(editNodeModal.nodeId)) {
+          alert(`Cannot delete ${node.type} with children.`);
+          return;
+        }
+        setNodes(prev => {
+          const next = JSON.parse(JSON.stringify(prev));
+          delete next[editNodeModal.nodeId!];
+          return next;
+        });
       }
-      
-      setNodes(prev => {
-        const next = JSON.parse(JSON.stringify(prev));
-        delete next[editNodeModal.nodeId!];
-        return next;
-      });
     }
     setEditNodeModal({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' });
   };
@@ -817,7 +830,7 @@ export default function ProjBuild() {
                   onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                   onDoubleClick={(e) => {
                     e.stopPropagation();
-                    if (node.type === 'section') handleEditSection(e, node.id);
+                    handleEditNode(e, node.id);
                   }}
                 >
                   <path 
@@ -990,81 +1003,95 @@ export default function ProjBuild() {
         </div>
       )}
 
-      {/* 2. Edit Section Modal */}
-      {editNodeModal.isOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121824] border border-slate-250 dark:border-slate-800 rounded-xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30">
-              <h2 className="text-sm font-bold text-slate-855 dark:text-slate-100">Edit Section</h2>
-            </div>
-
-            <div className="p-4 space-y-3">
-              <div>
-                <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Name (Max 12 chars)</label>
-                <input 
-                  type="text" 
-                  value={editNodeModal.name}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 12) setEditNodeModal(prev => ({...prev, name: e.target.value}));
-                  }}
-                  className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
-                  autoFocus
-                />
+      {/* 2. Edit Node Modal */}
+      {editNodeModal.isOpen && (() => {
+        const node = editNodeModal.nodeId ? nodes[editNodeModal.nodeId] : null;
+        const nodeType = node?.type || 'section';
+        const typeLabel = nodeType === 'project' ? 'Project' : nodeType === 'tab' ? 'Tab' : 'Section';
+        const hasChildren = editNodeModal.nodeId ? nodeHasChildren(editNodeModal.nodeId) : false;
+        
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#121824] border border-slate-250 dark:border-slate-800 rounded-xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30">
+                <h2 className="text-sm font-bold text-slate-855 dark:text-slate-100">Edit {typeLabel}</h2>
               </div>
-              
-              <div>
-                <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Execution Mode</label>
-                <select 
-                  value={editNodeModal.exec}
-                  onChange={(e) => setEditNodeModal(prev => ({...prev, exec: e.target.value}))}
-                  className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
-                >
-                  <option value="0">0 = Immediately</option>
-                  <option value="5000">5000 = 5 seconds</option>
-                  <option value="Once">Once = One time only</option>
-                  <option value="Manual">Manual = Request number</option>
-                </select>
-                
-                {editNodeModal.exec === 'Manual' && (
+
+              <div className="p-4 space-y-3">
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Name (Max 12 chars)</label>
                   <input 
-                    type="number"
-                    value={editNodeModal.manualReq}
-                    onChange={(e) => setEditNodeModal(prev => ({...prev, manualReq: e.target.value}))}
-                    placeholder="Enter manual request offset"
-                    className="w-full mt-2 bg-slate-50 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none shadow-sm"
+                    type="text" 
+                    value={editNodeModal.name}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 12) setEditNodeModal(prev => ({...prev, name: e.target.value}));
+                    }}
+                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
+                    autoFocus
                   />
+                </div>
+                
+                {nodeType === 'section' && (
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Execution Mode</label>
+                    <select 
+                      value={editNodeModal.exec}
+                      onChange={(e) => setEditNodeModal(prev => ({...prev, exec: e.target.value}))}
+                      className="w-full bg-slate-55 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
+                    >
+                      <option value="0">0 = Immediately</option>
+                      <option value="5000">5000 = 5 seconds</option>
+                      <option value="Once">Once = One time only</option>
+                      <option value="Manual">Manual = Request number</option>
+                    </select>
+                    
+                    {editNodeModal.exec === 'Manual' && (
+                      <input 
+                        type="number"
+                        value={editNodeModal.manualReq}
+                        onChange={(e) => setEditNodeModal(prev => ({...prev, manualReq: e.target.value}))}
+                        placeholder="Enter manual request offset"
+                        className="w-full mt-2 bg-slate-55 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none shadow-sm"
+                      />
+                    )}
+                  </div>
                 )}
               </div>
-            </div>
 
-            <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-between items-center shrink-0">
-              <button 
-                onClick={deleteSection}
-                className="p-2 rounded-lg text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                title="Delete Section"
-              >
-                <Trash2 size={16} />
-              </button>
-              
-              <div className="flex gap-2">
+              <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-between items-center shrink-0">
                 <button 
-                  onClick={() => setEditNodeModal({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' })} 
-                  className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-650 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                  onClick={hasChildren ? undefined : deleteNode}
+                  disabled={hasChildren}
+                  className={`p-2 rounded-lg transition-colors ${
+                    hasChildren 
+                      ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40' 
+                      : 'text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer'
+                  }`}
+                  title={hasChildren ? `Cannot delete ${nodeType} with children` : `Delete ${typeLabel}`}
                 >
-                  Cancel
+                  <Trash2 size={16} />
                 </button>
-                <button 
-                  onClick={saveEditSection} 
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  disabled={!editNodeModal.name.trim() || (editNodeModal.exec === 'Manual' && !editNodeModal.manualReq.trim())}
-                >
-                  Save
-                </button>
+                
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setEditNodeModal({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' })} 
+                    className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-650 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={saveEditNode} 
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    disabled={!editNodeModal.name.trim() || (nodeType === 'section' && editNodeModal.exec === 'Manual' && !editNodeModal.manualReq.trim())}
+                  >
+                    Save
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 3. Edit Row Group Modal (Double click row container) */}
       {showGroupModal && (
