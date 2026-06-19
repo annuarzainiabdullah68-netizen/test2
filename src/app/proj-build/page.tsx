@@ -1266,7 +1266,7 @@ export default function ProjBuild() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0 items-start border-t border-slate-200 dark:border-slate-800/80 pt-3">
                 <div
                   className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex flex-col justify-start gap-1.5 w-full shadow-inner select-none font-semibold text-xs"
-                  style={{ height: `${18.5 * fontSize}rem` }}
+                  style={{ height: '18.5rem' }}
                 >
                   {(
                     [['args', 'Args Limit (X)', currentX],
@@ -1298,7 +1298,7 @@ export default function ProjBuild() {
 
                 <div
                   className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 w-full shadow-inner overflow-y-auto"
-                  style={{ height: `${18.5 * fontSize}rem` }}
+                  style={{ height: '18.5rem' }}
                 >
                   <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none">{currentHeaderLabel}</label>
                   <div className="space-y-1">

@@ -410,7 +410,7 @@ export default function FuncBuild() {
           {/* Variables List Pane */}
           <div
             className="flex-1 bg-slate-50 dark:bg-[#0a0f18]/30 rounded-xl p-3 border border-slate-200 dark:border-slate-800/80 transition-colors shadow-inner flex flex-col"
-            style={{ height: `${26 * fontSize}rem` }}
+            style={{ height: '26rem' }}
           >
              <div className="flex items-center justify-between mb-2">
                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider select-none">{panes[activePane].title}</div>
