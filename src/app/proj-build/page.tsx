@@ -33,7 +33,8 @@ export default function ProjBuild() {
   const router = useRouter();
   const { 
     nodes, setNodes, registry, usbConnected, setUsbConnected,
-    projects, setProjects, activeProjectId, setActiveProjectId, createProject, deleteProject 
+    projects, setProjects, activeProjectId, setActiveProjectId, createProject, deleteProject,
+    fontSize
   } = useApp();
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function ProjBuild() {
 
   const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
   const [showEditRowModal, setShowEditRowModal] = useState<boolean>(false);
+  const [selectedStatRow, setSelectedStatRow] = useState<'args' | 'ints' | 'rets'>('args');
   const [promptModal, setPromptModal] = useState<PromptModalState>({ isOpen: false, type: '', title: '', targetParent: null });
   const [newItemName, setNewItemName] = useState<string>('');
   const [executionMode, setExecutionMode] = useState<string>('0');
@@ -641,7 +643,14 @@ export default function ProjBuild() {
     } else {
       cmd = row.command.split('[')[0] || 'PT0';
     }
-    setEditRowData({ id: row.id, label: row.label || '', command: cmd, args: rowArgs });
+    
+    // Pad the arguments to match the sum of x, y, and z from registry prototype
+    const found = registry.find(r => r.Cmd === cmd);
+    const totalLen = found ? (found.x + found.y + found.z) : 0;
+    const paddedArgs = Array.from({ length: totalLen }, (_, i) => rowArgs[i] || '');
+
+    setEditRowData({ id: row.id, label: row.label || '', command: cmd, args: paddedArgs });
+    setSelectedStatRow('args');
     setShowEditRowModal(true);
   };
 
@@ -675,6 +684,33 @@ export default function ProjBuild() {
     });
     setShowEditRowModal(false);
   };
+
+  const currentCmdProto = registry.find(r => r.Cmd === editRowData.command);
+  const currentX = currentCmdProto?.x || 0;
+  const currentY = currentCmdProto?.y || 0;
+  const currentZ = currentCmdProto?.z || 0;
+
+  let currentStartIndex = 0;
+  let currentCount = 0;
+  let currentLabelPrefix = 'A';
+  let currentHeaderLabel = 'Argument Input Values';
+
+  if (selectedStatRow === 'args') {
+    currentStartIndex = 0;
+    currentCount = currentX;
+    currentLabelPrefix = 'A';
+    currentHeaderLabel = 'Argument Input Values';
+  } else if (selectedStatRow === 'ints') {
+    currentStartIndex = currentX;
+    currentCount = currentY;
+    currentLabelPrefix = 'I';
+    currentHeaderLabel = 'Internal Var Input Values';
+  } else if (selectedStatRow === 'rets') {
+    currentStartIndex = currentX + currentY;
+    currentCount = currentZ;
+    currentLabelPrefix = 'R';
+    currentHeaderLabel = 'Return Input Values';
+  }
 
   return (
     <div 
@@ -1121,12 +1157,13 @@ export default function ProjBuild() {
                     onChange={e => {
                       const newCmd = e.target.value;
                       const found = registry.find(r => r.Cmd === newCmd);
-                      const newLen = found ? found.x : 0;
+                      const totalLen = found ? (found.x + found.y + found.z) : 0;
                       setEditRowData({
                         ...editRowData,
                         command: newCmd,
-                        args: Array.from({ length: newLen }, (_, i) => editRowData.args[i] || '')
+                        args: Array.from({ length: totalLen }, (_, i) => editRowData.args[i] || '')
                       });
+                      setSelectedStatRow('args');
                     }}
                     className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                   >
@@ -1200,49 +1237,67 @@ export default function ProjBuild() {
 
               {/* Dynamic Arguments fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0 items-start border-t border-slate-200 dark:border-slate-800/80 pt-3">
-                <div className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex flex-col justify-center gap-1.5 w-full shadow-inner select-none font-semibold text-xs">
-                  <div className="flex items-center justify-between px-2 py-1 bg-white dark:bg-[#121824] rounded-lg border border-slate-200 dark:border-slate-800">
-                     <span className="text-slate-655 dark:text-slate-400">Args Limit (X)</span>
-                     <div className="w-12 bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 border-slate-300 dark:border-slate-805 text-center text-slate-800 dark:text-slate-200 rounded-md py-0.5 text-[10px] font-mono font-bold shadow-sm">
-                       {editRowData.args.length}
-                     </div>
-                  </div>
-                  <div className="flex items-center justify-between px-2 py-1 bg-white dark:bg-[#121824] rounded-lg border border-slate-200 dark:border-slate-800">
-                     <span className="text-slate-655 dark:text-slate-400">Internal Vars (Y)</span>
-                     <div className="w-12 bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 border-slate-300 dark:border-slate-805 text-center text-slate-800 dark:text-slate-200 rounded-md py-0.5 text-[10px] font-mono font-bold shadow-sm">
-                       {registry.find(r => r.Cmd === editRowData.command)?.y || 0}
-                     </div>
-                  </div>
-                  <div className="flex items-center justify-between px-2 py-1 bg-white dark:bg-[#121824] rounded-lg border border-slate-200 dark:border-slate-800">
-                     <span className="text-slate-655 dark:text-slate-400">Returns (Z)</span>
-                     <div className="w-12 bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 border-slate-300 dark:border-slate-805 text-center text-slate-800 dark:text-slate-200 rounded-md py-0.5 text-[10px] font-mono font-bold shadow-sm">
-                       {registry.find(r => r.Cmd === editRowData.command)?.z || 0}
-                     </div>
-                  </div>
+                <div
+                  className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex flex-col justify-start gap-1.5 w-full shadow-inner select-none font-semibold text-xs"
+                  style={{ height: `${18.5 * fontSize}rem` }}
+                >
+                  {(
+                    [['args', 'Args Limit (X)', currentX],
+                     ['ints', 'Internal Vars (Y)', currentY],
+                     ['rets', 'Returns (Z)', currentZ]
+                    ] as [string, string, number][]
+                  ).map(([key, label, val]) => {
+                    const isActive = selectedStatRow === key;
+                    return (
+                      <div
+                        key={key}
+                        onClick={() => setSelectedStatRow(key as 'args' | 'ints' | 'rets')}
+                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg border cursor-pointer transition-all ${
+                          isActive
+                            ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-800'
+                            : 'bg-white dark:bg-[#121824] border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                        }`}
+                      >
+                        <span className={`transition-colors ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-655 dark:text-slate-400'}`}>{label}</span>
+                        <div className={`w-12 border text-center rounded-md py-0.5 text-[10px] font-mono font-bold shadow-sm transition-colors ${
+                          isActive
+                            ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                            : 'bg-slate-50 dark:bg-[#0a0f18] border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200'
+                        }`}>{val}</div>
+                      </div>
+                    );
+                  })}
                 </div>
 
-                <div className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 w-full shadow-inner max-h-36 overflow-y-auto">
-                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none">Argument Input Values</label>
+                <div
+                  className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 w-full shadow-inner overflow-y-auto"
+                  style={{ height: `${18.5 * fontSize}rem` }}
+                >
+                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none">{currentHeaderLabel}</label>
                   <div className="space-y-1">
-                    {editRowData.args.map((arg, idx) => (
-                      <div key={idx} className="flex items-center gap-2 bg-white dark:bg-[#121824] p-1 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
-                        <span className="text-slate-400 dark:text-slate-505 text-[10px] w-6 font-mono text-right select-none">A{idx+1}</span>
-                        <span className="text-orange-500 dark:text-orange-400 text-[9px] w-8 font-mono font-bold select-none">int8</span>
-                        <input 
-                          type="text" 
-                          value={arg} 
-                          onChange={e => {
-                            const newArgs = [...editRowData.args];
-                            newArgs[idx] = e.target.value;
-                            setEditRowData({...editRowData, args: newArgs});
-                          }}
-                          className="flex-1 bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-md p-1 text-xs focus:border-blue-500 outline-none font-mono" 
-                        />
-                      </div>
-                    ))}
-                    {editRowData.args.length === 0 && (
+                    {Array.from({ length: currentCount }).map((_, i) => {
+                      const actualIdx = currentStartIndex + i;
+                      const val = editRowData.args[actualIdx] || '';
+                      return (
+                        <div key={i} className="flex items-center gap-2 bg-white dark:bg-[#121824] p-1 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
+                          <span className="text-slate-400 dark:text-slate-555 text-[10px] w-6 font-mono text-right select-none">{currentLabelPrefix}{i+1}</span>
+                          <span className="text-orange-500 dark:text-orange-400 text-[9px] w-8 font-mono font-bold select-none">int8</span>
+                          <input 
+                            type="text" 
+                            value={val} 
+                            onChange={e => {
+                              const newArgs = [...editRowData.args];
+                              newArgs[actualIdx] = e.target.value;
+                              setEditRowData({...editRowData, args: newArgs});
+                            }}
+                            className="flex-1 bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-md p-1 text-xs focus:border-blue-500 outline-none font-mono" 
+                          />
+                        </div>
+                      );
+                    })}
+                    {currentCount === 0 && (
                       <div className="text-[10px] text-slate-400 dark:text-slate-505 italic py-2 select-none text-center">
-                        This command requires no arguments.
+                        No variables configured for this category.
                       </div>
                     )}
                   </div>
