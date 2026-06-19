@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Requirements: ESP32 Project & Function Builder</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --border-color: #e5e7eb;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-body);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .container {
+            background-color: var(--bg-card);
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #111827;
+            margin-top: 2rem;
+        }
+        h1 {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+        h2 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+        }
+        ul, ol {
+            margin-bottom: 1.5rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        code {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.9em;
+        }
+        .diagram-wrapper {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        .diagram-wrapper img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .diagram-caption {
+            display: block;
+            margin-top: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .dev-note {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .img-fallback {
+            display: none; 
+            padding: 2rem; 
+            background: #e2e8f0; 
+            border-radius: 4px; 
+            color: #475569;
+            font-family: monospace;
+            border: 1px dashed #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Project Requirements & Workflow Documentation</h1>
+
+    <h2>1. Project Overview & Technical Stack</h2>
+    <p>This project is a React-based web application serving as a central development hub for microcontroller logic generation. It allows users to build C++ command prototypes (specifically tailored for ESP32 firmware) and visually construct execution logic. A core feature is direct hardware integration utilizing the Web Serial API to transmit compiled hex/binary data directly to the board.</p>
+    
+    <ul>
+        <li><strong>Core Framework:</strong> React + Next.js</li>
+        <li><strong>Language:</strong> JavaScript / TypeScript (Strict typing recommended for hardware payload structures)</li>
+        <li><strong>Styling:</strong> Tailwind CSS (Requires comprehensive Dark/Light mode support)</li>
+        <li><strong>Hardware API:</strong> Web Serial API (<code>navigator.serial</code>)</li>
+        <li><strong>Target Environment:</strong> Optimized for development on Ubuntu 22.04 (requires specific handling for <code>/dev/ttyUSB</code> device paths).</li>
+    </ul>
+
+    <div class="dev-note">
+        <strong>Important Developer Note:</strong> The provided architecture diagrams mention "Vite" and port `5173`. Disregard Vite. The application must be built, bootstrapped, and routed strictly using <strong>Next.js</strong> (running on <code>localhost:3000</code>).
+    </div>
+
+    <h2>2. Global Layout & Header Requirements</h2>
+    <p>All non-modal pages (Function Builder, Project Builder, Process Module) must be wrapped in a persistent <code>&lt;GlobalHeader /&gt;</code> Next.js layout component to prevent unnecessary re-renders.</p>
+    
+    <div class="diagram-wrapper">
+        <img src="image_9ff146.png" alt="Figure 5" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="img-fallback">Missing file: <strong>image_9ff146.png</strong><br>Please ensure this image is in the same folder as this HTML file.</div>
+        <span class="diagram-caption">Figure 5: Global Navigation & Status Bar</span>
+    </div>
+
+    <ul>
+        <li><strong>Navigation:</strong> A back button on the far left to return to the logical previous view or Main Hub.</li>
+        <li><strong>Font Size Selector:</strong> An interactive group (<code>A-</code>, <code>140%</code>, <code>A+</code>) mapped to a global React Context that dynamically scales the root typography <code>rem</code> values.</li>
+        <li><strong>Hardware Status Pill:</strong> Positioned on the far right. Strictly bound to the Web Serial API state manager. Displays a green "USB CONNECTED" pill when an active connection is verified, and falls back to a gray disconnected state otherwise.</li>
+    </ul>
+
+    <h2>3. Application Architecture & Main Hub</h2>
+    
+    <div class="diagram-wrapper">
+        <img src="image_9ffc44.png" alt="Figure 1" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="img-fallback">Missing file: <strong>image_9ffc44.png</strong><br>Please ensure this image is in the same folder as this HTML file.</div>
+        <span class="diagram-caption">Figure 1: Application Architecture & Serial Connection Workflow</span>
+    </div>
+
+    <h3>App.jsx (Main Hub)</h3>
+    <p>The entry point featuring two primary routing paths.</p>
+    <ul>
+        <li><strong>Function Builder Path:</strong> Direct routing to <code>FuncBuild.jsx</code>. No hardware prerequisites.</li>
+        <li><strong>Project Builder Path:</strong> Gated behind the Web Serial connection logic. 
+            <ol>
+                <li>Evaluates if a USB device is already paired. If true, routes directly to <code>ProjBuild.jsx</code>.</li>
+                <li>If false, triggers <code>navigator.serial.requestPort()</code>.</li>
+                <li><strong>Strict Filtering:</strong> The port request must filter to display only <code>ttyUSB</code> ports (filtering out system-level <code>ttyS</code> ports on Ubuntu).</li>
+            </ol>
+        </li>
+    </ul>
+
+    <h2>4. Function Builder (FuncBuild.jsx)</h2>
+    <p>A dedicated interface for building and managing a global <code>RowRegistry</code> of command prototypes.</p>
+
+    <div class="diagram-wrapper">
+        <img src="image_9ff8a6.png" alt="Figure 2" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="img-fallback">Missing file: <strong>image_9ff8a6.png</strong><br>Please ensure this image is in the same folder as this HTML file.</div>
+        <span class="diagram-caption">Figure 2: Function Builder Interface & Row Registry Configuration</span>
+    </div>
+
+    <ul>
+        <li><strong>State Management:</strong> Maintains an array of objects structured as <code>{Cmd, x, y, z}</code> (Cmd Name, Args#, Ints#, Rets#). Data must be saved to local browser storage.</li>
+        <li><strong>Dynamic Parameter UI:</strong> Modifying the numeric inputs (Args, Ints, Rets) must dynamically generate or remove sequential configuration rows.</li>
+        <li><strong>Allowed Data Types:</strong> <code>char</code>, <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>, <code>uint8</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code>, <code>float</code>, <code>double</code>, <code>*</code>, <code>str</code>.</li>
+        <li><strong>String Construction Logic:</strong> The UI must render a real-time prototype string formatted as: <br><code>Cmd : Rets (Args) Ints</code></li>
+    </ul>
+
+    <h2>5. Project Builder (ProjBuild.jsx)</h2>
+    <p>A visual, node-based interactive canvas for constructing execution logic.</p>
+
+    <div class="diagram-wrapper">
+        <img src="image_9ff82c.png" alt="Figure 3.1" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="img-fallback">Missing file: <strong>image_9ff82c.png</strong><br>Please ensure this image is in the same folder as this HTML file.</div>
+        <span class="diagram-caption">Figure 3.1: Node Hierarchy (Project → Tab → Section → Row)</span>
+    </div>
+
+    <div class="diagram-wrapper">
+        <img src="image_9ff525.png" alt="Figure 3.2" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="img-fallback">Missing file: <strong>image_9ff525.png</strong><br>Please ensure this image is in the same folder as this HTML file.</div>
+        <span class="diagram-caption">Figure 3.2: Drag-and-Drop Canvas & Spline Connections</span>
+    </div>
+
+    <h3>Canvas & Interaction Requirements</h3>
+    <ul>
+        <li><strong>Interactive Workspace:</strong> The container must support panning and zooming across the node structure.</li>
+        <li><strong>Node Styling:</strong> Project, Tab, and Section nodes must be strictly hexagonal with a 3D visual aesthetic using Tailwind CSS shadows/gradients. Connected by dynamic spline curves originating from the exact center of each hexagon.</li>
+        <li><strong>Row Groups & Drag-and-Drop:</strong> Row icons are vertically stacked within a Section. Users must be able to drag a single Row out of its current group and drop it onto another Section to reassign its logic block. The UI must automatically shift elements upward to close any gaps left by deleted or moved rows.</li>
+    </ul>
+
+    <div class="diagram-wrapper">
+        <img src="image_9ff4aa.png" alt="Figure 3.3" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="img-fallback">Missing file: <strong>image_9ff4aa.png</strong><br>Please ensure this image is in the same folder as this HTML file.</div>
+        <span class="diagram-caption">Figure 3.3: Deep Editing Modals & Hardware Pin Assignment</span>
+    </div>
+
+    <h3>Modal Editing Workflows</h3>
+    <p>Double-clicking elements on the canvas triggers stateful modals that trap user focus.</p>
+    <p>Each row under a Section will be put into container</p>
+    <ul>
+        <li><strong>Edit Row Group (Double-click Row Container):</strong> A list view for rapid, bulk editing of row labels, commands, and deletions within a specific section.</li>
+        <li><strong>Edit Row (Double-click Row):</strong> Deep property inspection. Features a dynamically populated dropdown sourced from the <code>RowRegistry</code>, read-only metadata, and an interactive grid of Available Pins (e.g., <code>BTN_SW1</code>, <code>LED_P8</code>) that inject their values into the argument input fields upon click.</li>
+    </ul>
+
+    <h2>6. Process Module (Process.jsx)</h2>
+    <p>The final compilation, review, and hardware execution dashboard.</p>
+
+    <div class="diagram-wrapper">
+        <img src="image_9ff447.png" alt="Figure 4" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="img-fallback">Missing file: <strong>image_9ff447.png</strong><br>Please ensure this image is in the same folder as this HTML file.</div>
+        <span class="diagram-caption">Figure 4: The Compilation & Hex Review Dashboard</span>
+    </div>
+
+    <ul>
+        <li><strong>Interactive Tree View (Left Panel):</strong> Displays the hierarchical project logic. Clicking a row acts as the master state driver for the dashboard.</li>
+        <li><strong>Row View Composer (Top Span):</strong> Automatically merges the active row's arguments with its Master Command Definition (e.g., <code>Label:GP0:int8(int8 BTN_SW1, int16 200) int8, uint32</code>).</li>
+        <li><strong>Context Panel (Center):</strong> Automatically scrolls to and highlights the active command's metadata and description. Also tracks a consolidated list of utilized Hardware Pins.</li>
+        <li><strong>Hex View (Right Panel):</strong> A specialized data grid rendering the compiled binary/hex payload (standard 16-byte offset formatting + ASCII representation) prior to triggering the <strong>Send to Hardware</strong> function over the serial connection.</li>
+    </ul>
+
+</div>
+
+</body>
+</html>
