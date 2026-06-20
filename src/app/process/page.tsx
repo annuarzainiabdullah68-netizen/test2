@@ -94,7 +94,11 @@ export default function ProcessView() {
       // Fallback if prototype is not found
       return (
         <span className="font-mono text-xs">
-          {activeRow.label ? `${activeRow.label} : ` : ''}
+          {activeRow.label ? (
+            <span className="text-orange-500 dark:text-orange-400 font-bold">
+              {activeRow.label} :{' '}
+            </span>
+          ) : ''}
           {activeRow.command}
         </span>
       );
@@ -109,7 +113,18 @@ export default function ProcessView() {
     const formattedArgs: React.ReactNode[] = [];
     for (let i = 0; i < x; i++) {
       const type = argTypes[i]?.type || 'int8';
-      const val = rowArgs[i] !== undefined && rowArgs[i] !== '' ? rowArgs[i] : '';
+      let val = rowArgs[i] !== undefined && rowArgs[i] !== '' ? rowArgs[i] : '';
+      if (val) {
+        if (type === 'str') {
+          if (!val.startsWith('"') || !val.endsWith('"')) {
+            val = `"${val}"`;
+          }
+        } else if (type === 'char') {
+          if (!val.startsWith("'") || !val.endsWith("'")) {
+            val = `'${val}'`;
+          }
+        }
+      }
       formattedArgs.push(
         <span key={i}>
           {i > 0 && ', '}
@@ -148,7 +163,7 @@ export default function ProcessView() {
     return (
       <span className="font-mono text-xs select-text">
         {activeRow.label && (
-          <span className="text-slate-800 dark:text-slate-200 font-bold">
+          <span className="text-orange-500 dark:text-orange-400 font-bold">
             {activeRow.label} :{' '}
           </span>
         )}
