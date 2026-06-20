@@ -75,9 +75,80 @@ export default function ProjBuild() {
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const [isNodeDragging, setIsNodeDragging] = useState<boolean>(false);
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
+  const [dragStartPos, setDragStartPos] = useState<{ x: number; y: number } | null>(null);
   const [lastMousePos, setLastMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
+
+  const [pinMacros, setPinMacros] = useState<string[]>(['BTN_SW1', 'BTN_SW2', 'BTN_SW3', 'BTN_SW4', 'BTN_SW5', 'BTN_SW6', 'LED_P1', 'LED_P2', 'LED_P3', 'LED_P4', 'LED_P5', 'LED_P6', 'LED_P7', 'LED_P8', 'LED_P9', 'LED_P10', 'LED_P11', 'LED_P12', 'LED_P13', 'LED_P14']);
+  const [cmdDetails, setCmdDetails] = useState<Record<string, any>>({});
+
+  const getCommandDetails = (cmdName: string) => {
+    const nameUpper = cmdName.toUpperCase();
+    if (cmdDetails[nameUpper]) {
+      return cmdDetails[nameUpper];
+    }
+    const found = registry.find(r => r.Cmd === nameUpper);
+    if (found) {
+      let defaultArgs: { type: string; name: string }[] = [];
+      let defaultInts: { type: string; name: string }[] = [];
+      let defaultRets: { type: string; name: string }[] = [];
+      if (found.Cmd === 'PT0') {
+        defaultArgs = [{ type: 'int8', name: 'pinOutput' }, { type: 'int16', name: 'markDelay' }, { type: 'int16', name: 'spaceDelay' }];
+        defaultInts = [{ type: 'int8', name: 'state' }, { type: 'uint32', name: 'delay' }];
+        defaultRets = [];
+      } else if (found.Cmd === 'GP0') {
+        defaultArgs = [{ type: 'int8', name: 'pinInput' }, { type: 'int16', name: 'debounce' }];
+        defaultInts = [{ type: 'int8', name: 'lastState' }, { type: 'uint32', name: 'timer' }];
+        defaultRets = [{ type: 'int8', name: 'val' }];
+      } else {
+        defaultArgs = Array.from({ length: found.x }, (_, i) => ({ type: 'int8', name: `arg_${i}` }));
+        defaultInts = Array.from({ length: found.y }, (_, i) => ({ type: 'int8', name: `int_${i}` }));
+        defaultRets = Array.from({ length: found.z }, (_, i) => ({ type: 'int8', name: `ret_${i}` }));
+      }
+      return {
+        Cmd: found.Cmd,
+        x: found.x,
+        y: found.y,
+        z: found.z,
+        desc: found.desc,
+        args: defaultArgs,
+        ints: defaultInts,
+        rets: defaultRets
+      };
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const loadFromStorage = () => {
+      const storedPins = localStorage.getItem('Pin Register');
+      if (storedPins) {
+        try {
+          const parsed = JSON.parse(storedPins);
+          if (Array.isArray(parsed)) {
+            setPinMacros(parsed.map((p: any) => p.name).filter(Boolean));
+          }
+        } catch {}
+      }
+      const storedCmds = localStorage.getItem('Cmd Register');
+      if (storedCmds) {
+        try {
+          const parsed = JSON.parse(storedCmds);
+          if (Array.isArray(parsed)) {
+            const map: Record<string, any> = {};
+            parsed.forEach((cmd: any) => {
+              map[cmd.Cmd.toUpperCase()] = cmd;
+            });
+            setCmdDetails(map);
+          }
+        } catch {}
+      }
+    };
+    loadFromStorage();
+    window.addEventListener('focus', loadFromStorage);
+    return () => window.removeEventListener('focus', loadFromStorage);
+  }, [registry]);
 
   const [editNodeModal, setEditNodeModal] = useState<EditNodeState>({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' });
   const [editRowData, setEditRowData] = useState<EditRowState>({ id: null, label: '', command: 'PT0', args: [] });
@@ -267,7 +338,7 @@ export default function ProjBuild() {
 
                 {sortedProjects.length === 0 && (
                   <div className="text-center py-12 text-slate-400 dark:text-slate-500 italic select-none">
-                    No projects found. Click "New" to create your first execution workflow.
+                    No projects found. Click &quot;New&quot; to create your first execution workflow.
                   </div>
                 )}
               </div>
@@ -495,6 +566,10 @@ export default function ProjBuild() {
     setIsNodeDragging(true);
     setDraggingNodeId(nodeId);
     setLastMousePos({ x: e.clientX, y: e.clientY });
+    const node = nodes[nodeId];
+    if (node) {
+      setDragStartPos({ x: node.x, y: node.y });
+    }
   };
 
   const stopInteractions = () => {
@@ -510,6 +585,7 @@ export default function ProjBuild() {
     setIsNodeDragging(false);
     setDraggingNodeId(null);
     setHoveredTargetId(null);
+    setDragStartPos(null);
   };
 
   const handleOpenGroupModal = (secId: string) => {
@@ -788,6 +864,7 @@ export default function ProjBuild() {
             const x2 = node.x + 56;
             const y2 = node.y + 48;
             const d = `M ${x1} ${y1} C ${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}`;
+            const isEdgeDragged = draggingNodeId === node.id || draggingNodeId === node.parentId;
             return (
               <path 
                 key={`edge-${node.id}`} 
@@ -795,11 +872,42 @@ export default function ProjBuild() {
                 className="stroke-slate-400 dark:stroke-slate-500" 
                 strokeWidth="2" 
                 fill="none" 
-                opacity="0.85" 
+                opacity={isEdgeDragged ? "0.4" : "0.85"} 
+                strokeDasharray={isEdgeDragged ? "4 4" : "none"}
               />
             );
           })}
         </svg>
+
+        {/* Dragging Ghost Placeholder at starting position */}
+        {isNodeDragging && dragStartPos && draggingNodeId && nodes[draggingNodeId] && (
+          <div 
+            className="absolute opacity-25 pointer-events-none select-none scale-95" 
+            style={{ 
+              left: dragStartPos.x, 
+              top: dragStartPos.y, 
+              width: 112, 
+              height: 96,
+              zIndex: 5
+            }}
+          >
+            <div className="relative flex flex-col items-center w-full h-full">
+              <svg width="112" height="96" viewBox="0 0 112 96" className="overflow-visible">
+                <path 
+                  d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  className="text-slate-450 dark:text-slate-500"
+                  strokeWidth="2" 
+                  strokeDasharray="5 5"
+                />
+              </svg>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-transparent border border-dashed border-slate-300 dark:border-slate-700 px-2 py-0.5 rounded text-slate-450 dark:text-slate-500 font-bold text-[9px] uppercase tracking-wide whitespace-nowrap">
+                {nodes[draggingNodeId].name}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Nodes Canvas */}
         {Object.values(nodes).map((node) => {
@@ -809,7 +917,7 @@ export default function ProjBuild() {
           return (
             <div 
               key={node.id} 
-              className="absolute" 
+              className={`absolute transition-all duration-100 ${isDragged ? 'opacity-50 select-none pointer-events-none' : ''}`}
               style={{ 
                 left: node.x, 
                 top: node.y, 
@@ -826,7 +934,7 @@ export default function ProjBuild() {
                 {/* Hexagonal Node Design */}
                 <svg 
                   width="112" height="96" viewBox="0 0 112 96" 
-                  className={`overflow-visible ${isDragged ? 'cursor-grabbing drop-shadow-2xl opacity-80' : 'cursor-default drop-shadow-lg'}`}
+                  className={`overflow-visible ${isDragged ? 'cursor-grabbing' : 'cursor-default drop-shadow-lg'}`}
                   onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                   onDoubleClick={(e) => {
                     e.stopPropagation();
@@ -837,18 +945,19 @@ export default function ProjBuild() {
                     d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z" 
                     fill={`url(#grad-${node.type})`} 
                     filter={isHoveredTarget ? "url(#glow-highlight)" : "url(#glow)"} 
-                    opacity={isHoveredTarget ? "0.9" : "0.7"} 
+                    opacity={isDragged ? "0.45" : (isHoveredTarget ? "0.9" : "0.7")} 
                   />
                   <path 
                     d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z" 
-                    fill={`url(#grad-${node.type})`} 
-                    stroke={isHoveredTarget ? "#fbbf24" : "rgba(255,255,255,0.3)"} 
+                    fill="none" 
+                    stroke={isDragged ? "rgba(255,255,255,0.4)" : (isHoveredTarget ? "#fbbf24" : "rgba(255,255,255,0.3)")} 
                     strokeWidth={isHoveredTarget ? "3" : "1"} 
+                    strokeDasharray={isDragged ? "4 4" : "none"}
                   />
                 </svg>
 
                 {/* Node Label Text */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-[#161b24] border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded shadow-md text-slate-850 dark:text-white font-bold text-[9px] whitespace-nowrap pointer-events-none uppercase tracking-wide">
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-[#161b24] border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded shadow-md text-slate-850 dark:text-white font-bold text-[9px] whitespace-nowrap pointer-events-none uppercase tracking-wide ${isDragged ? 'opacity-70' : ''}`}>
                   {node.name}
                 </div>
 
@@ -875,9 +984,9 @@ export default function ProjBuild() {
                     onDoubleClick={(e) => { e.stopPropagation(); handleOpenGroupModal(node.id); }} 
                     onDragOver={handleCanvasDragOver}
                     onDrop={(e) => handleCanvasDrop(e, node.id)}
-                    className="bg-white/95 dark:bg-[#121824]/95 pt-1 px-1 pb-4 rounded-xl border border-slate-200 dark:border-slate-800/80 min-w-[220px] shadow-2xl hover:border-slate-350 dark:hover:border-slate-700 transition-colors"
+                    className="bg-white/95 dark:bg-[#121824]/95 pt-1 px-1 pb-4 rounded-xl border border-slate-200 dark:border-slate-800/80 min-w-[13.75rem] shadow-2xl hover:border-slate-350 dark:hover:border-slate-700 transition-colors"
                   >
-                    <div className="space-y-0.5 min-h-[30px] flex flex-col">
+                    <div className="space-y-0.5 min-h-[1.875rem] flex flex-col">
                       {node.rows.map((row, rowIndex) => (
                         <div 
                           key={row.id} 
@@ -886,20 +995,20 @@ export default function ProjBuild() {
                           onDragOver={handleCanvasDragOver}
                           onDrop={(e) => handleCanvasDrop(e, node.id, rowIndex)}
                           onDoubleClick={(e) => handleEditRow(e, row)} 
-                          className={`flex items-stretch bg-slate-100 dark:bg-[#1f293d] border border-slate-200 dark:border-slate-800 h-[24px] rounded-md text-[9px] font-bold text-slate-750 dark:text-slate-300 shadow-sm overflow-hidden group hover:brightness-105 cursor-grab active:cursor-grabbing transition-opacity ${canvasDraggedItem?.secId === node.id && canvasDraggedItem?.rowIndex === rowIndex ? 'opacity-40 border-2 border-dashed border-slate-400' : ''}`}
+                          className={`flex items-stretch bg-slate-100 dark:bg-[#1f293d] border border-slate-200 dark:border-slate-800 h-6 rounded-md text-[0.5625rem] font-bold text-slate-750 dark:text-slate-300 shadow-sm overflow-hidden group hover:brightness-105 cursor-grab active:cursor-grabbing transition-opacity ${canvasDraggedItem?.secId === node.id && canvasDraggedItem?.rowIndex === rowIndex ? 'opacity-40 border-2 border-dashed border-slate-400' : ''}`}
                         >
                           {row.label && (
                             <div className="bg-slate-200 dark:bg-[#1e345c] text-slate-800 dark:text-blue-200 px-1.5 w-12 flex items-center justify-center border-r border-slate-300 dark:border-slate-800 shrink-0 truncate">
                               {row.label}
                             </div>
                           )}
-                          <div className="px-2 flex items-center flex-1 tracking-tight truncate font-mono text-[8px]">
+                          <div className="px-2 flex items-center flex-1 tracking-tight truncate font-mono text-[0.5rem]">
                             {row.command}
                           </div>
                         </div>
                       ))}
                       {node.rows.length === 0 && (
-                        <div className="h-[24px] flex items-center justify-center text-slate-400 dark:text-slate-500 text-[9px] italic pointer-events-none rounded-md border border-dashed border-slate-250 dark:border-slate-800">
+                        <div className="h-6 flex items-center justify-center text-slate-400 dark:text-slate-505 text-[0.5625rem] italic pointer-events-none rounded-md border border-dashed border-slate-250 dark:border-slate-800">
                           Drop rows here
                         </div>
                       )}
@@ -1214,7 +1323,7 @@ export default function ProjBuild() {
                     <div className="flex flex-col min-h-0 flex-1">
                       <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none shrink-0">Available Peripheral Pin Macros</label>
                       <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-24 content-start pr-1">
-                        {['BTN_SW1', 'BTN_SW2', 'BTN_SW3', 'BTN_SW4', 'BTN_SW5', 'BTN_SW6', 'LED_P1', 'LED_P2', 'LED_P3', 'LED_P4', 'LED_P5', 'LED_P6', 'LED_P7', 'LED_P8', 'LED_P9', 'LED_P10', 'LED_P11', 'LED_P12', 'LED_P13', 'LED_P14'].map(pin => (
+                        {pinMacros.map(pin => (
                           <button 
                             key={pin} 
                             onClick={() => {
@@ -1232,19 +1341,35 @@ export default function ProjBuild() {
                     <div className="shrink-0 pt-2 mt-2 border-t border-slate-200 dark:border-slate-800/60 flex flex-col">
                       <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none shrink-0">Row Group Labels Context</label>
                       <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-16 pr-1">
-                        {['DSFS', 'Signal', 'uuuu', 'XXX', 'house', 'rr', 'Sini'].map(lbl => (
-                          <button 
-                            key={lbl} 
-                            onClick={() => {
-                              const newArgs = [...editRowData.args];
-                              if (newArgs.length > 1) newArgs[1] = lbl;
-                              setEditRowData({...editRowData, args: newArgs});
-                            }}
-                            className="bg-white dark:bg-[#1a2434] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[9px] font-mono px-2 py-1 rounded-md border border-slate-300 dark:border-slate-800 transition-colors shadow-sm cursor-pointer"
-                          >
-                            {lbl}
-                          </button>
-                        ))}
+                        {(() => {
+                          const existingLabels = new Set<string>();
+                          Object.values(nodes).forEach(node => {
+                            if (node.type === 'section' && node.rows) {
+                              node.rows.forEach(row => {
+                                if (row.label && row.label.trim()) {
+                                  existingLabels.add(row.label.trim());
+                                }
+                              });
+                            }
+                          });
+                          const labelsArray = Array.from(existingLabels);
+                          if (labelsArray.length === 0) {
+                            return <span className="text-[9px] text-slate-400 italic select-none">No labels defined in the workflow rows yet.</span>;
+                          }
+                          return labelsArray.map(lbl => (
+                            <button 
+                              key={lbl} 
+                              onClick={() => {
+                                const newArgs = [...editRowData.args];
+                                if (newArgs.length > 1) newArgs[1] = lbl;
+                                setEditRowData({...editRowData, args: newArgs});
+                              }}
+                              className="bg-white dark:bg-[#1a2434] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[9px] font-mono px-2 py-1 rounded-md border border-slate-300 dark:border-slate-800 transition-colors shadow-sm cursor-pointer"
+                            >
+                              {lbl}
+                            </button>
+                          ));
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -1302,26 +1427,55 @@ export default function ProjBuild() {
                 >
                   <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none">{currentHeaderLabel}</label>
                   <div className="space-y-1">
-                    {Array.from({ length: currentCount }).map((_, i) => {
-                      const actualIdx = currentStartIndex + i;
-                      const val = editRowData.args[actualIdx] || '';
-                      return (
-                        <div key={i} className="flex items-center gap-2 bg-white dark:bg-[#121824] p-1 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
-                          <span className="text-slate-400 dark:text-slate-555 text-[10px] w-6 font-mono text-right select-none">{currentLabelPrefix}{i+1}</span>
-                          <span className="text-orange-500 dark:text-orange-400 text-[9px] w-8 font-mono font-bold select-none">int8</span>
-                          <input 
-                            type="text" 
-                            value={val} 
-                            onChange={e => {
-                              const newArgs = [...editRowData.args];
-                              newArgs[actualIdx] = e.target.value;
-                              setEditRowData({...editRowData, args: newArgs});
-                            }}
-                            className="flex-1 bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-md p-1 text-xs focus:border-blue-500 outline-none font-mono" 
-                          />
-                        </div>
-                      );
-                    })}
+                    {(() => {
+                      const cmdDetailsObj = getCommandDetails(editRowData.command);
+                      return Array.from({ length: currentCount }).map((_, i) => {
+                        const actualIdx = currentStartIndex + i;
+                        const val = editRowData.args[actualIdx] || '';
+                        
+                        let varName = `${currentLabelPrefix}${i+1}`;
+                        let varType = 'int8';
+                        
+                        if (cmdDetailsObj) {
+                          if (selectedStatRow === 'args') {
+                            const argInfo = cmdDetailsObj.args[i];
+                            if (argInfo) {
+                              varName = argInfo.name;
+                              varType = argInfo.type;
+                            }
+                          } else if (selectedStatRow === 'ints') {
+                            const intInfo = cmdDetailsObj.ints[i];
+                            if (intInfo) {
+                              varName = intInfo.name;
+                              varType = intInfo.type;
+                            }
+                          } else if (selectedStatRow === 'rets') {
+                            const retInfo = cmdDetailsObj.rets[i];
+                            if (retInfo) {
+                              varName = retInfo.name;
+                              varType = retInfo.type;
+                            }
+                          }
+                        }
+                        
+                        return (
+                          <div key={i} className="flex items-center gap-2 bg-white dark:bg-[#121824] p-1 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
+                            <span className="text-slate-400 dark:text-slate-555 text-[10px] w-24 truncate font-mono select-none" title={varName}>{varName}</span>
+                            <span className="text-orange-550 dark:text-orange-400 text-[9px] w-12 font-mono font-bold select-none truncate" title={varType}>{varType}</span>
+                            <input 
+                              type="text" 
+                              value={val} 
+                              onChange={e => {
+                                const newArgs = [...editRowData.args];
+                                newArgs[actualIdx] = e.target.value;
+                                setEditRowData({...editRowData, args: newArgs});
+                              }}
+                              className="flex-1 bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-md p-1 text-xs focus:border-blue-500 outline-none font-mono" 
+                            />
+                          </div>
+                        );
+                      });
+                    })()}
                     {currentCount === 0 && (
                       <div className="text-[10px] text-slate-400 dark:text-slate-505 italic py-2 select-none text-center">
                         No variables configured for this category.

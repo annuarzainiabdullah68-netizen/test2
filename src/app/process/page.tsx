@@ -25,6 +25,21 @@ export default function ProcessView() {
   // Extract utilized hardware pins dynamically from all command rows
   const getUsedPins = () => {
     const pins = new Set<string>();
+    const customPins = new Set<string>();
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('Pin Register');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((p: any) => {
+              if (p && p.name) customPins.add(p.name);
+            });
+          }
+        } catch {}
+      }
+    }
+
     Object.values(nodes).forEach(node => {
       if (node.type === 'section' && node.rows) {
         node.rows.forEach(row => {
@@ -32,7 +47,12 @@ export default function ProcessView() {
           if (match) {
             const args = match[1].split(',').map(s => s.trim());
             args.forEach(arg => {
-              if (arg.startsWith('BTN_') || arg.startsWith('LED_') || arg.startsWith('GPIO_')) {
+              if (
+                arg.startsWith('BTN_') || 
+                arg.startsWith('LED_') || 
+                arg.startsWith('GPIO_') || 
+                customPins.has(arg)
+              ) {
                 pins.add(arg);
               }
             });

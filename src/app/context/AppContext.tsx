@@ -110,19 +110,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [usbConnected, setUsbConnected] = useState<boolean>(false);
   const [activeProjectId, setActiveProjectIdState] = useState<string | null>(null);
 
-  const [projects, setProjects] = useState<ProjectItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('esp32_projects');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {
-          console.error("Failed to parse stored projects", e);
-        }
-      }
-    }
-    return DEFAULT_PROJECTS;
-  });
+  const [projects, setProjects] = useState<ProjectItem[]>(DEFAULT_PROJECTS);
 
   const setActiveProjectId = (id: string | null) => {
     setActiveProjectIdState(id);
@@ -193,45 +181,39 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   };
 
   const [activeRow, setActiveRow] = useState<RowItem | null>(null);
-  
-  // Lazy State Initializations for local storage
-  const [fontSize, setFontSize] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const storedFontSize = localStorage.getItem('esp32_font_size');
-      if (storedFontSize) {
-        const parsed = parseFloat(storedFontSize);
-        if (!isNaN(parsed)) return parsed;
-      }
-    }
-    return 1.0;
-  });
-
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    if (typeof window !== 'undefined') {
-      const storedTheme = localStorage.getItem('esp32_theme');
-      if (storedTheme === 'light' || storedTheme === 'dark') {
-        return storedTheme;
-      }
-    }
-    return 'dark';
-  });
-
+  const [fontSize, setFontSize] = useState<number>(1.0);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [nodes, setNodes] = useState<Record<string, NodeItem>>({});
+  const [registry, setRegistry] = useState<RegistryEntry[]>(MOCK_REGISTRY);
 
-
-  const [registry, setRegistry] = useState<RegistryEntry[]>(() => {
-    if (typeof window !== 'undefined') {
-      const storedRegistry = localStorage.getItem('esp32_registry');
-      if (storedRegistry) {
-        try {
-          return JSON.parse(storedRegistry);
-        } catch (e) {
-          console.error("Failed to parse stored registry", e);
-        }
+  useEffect(() => {
+    // Load from local storage after mount to prevent hydration mismatch
+    const storedProjects = localStorage.getItem('esp32_projects');
+    if (storedProjects) {
+      try {
+        setProjects(JSON.parse(storedProjects));
+      } catch (e) {
+        console.error("Failed to parse stored projects", e);
       }
     }
-    return MOCK_REGISTRY;
-  });
+    const storedFontSize = localStorage.getItem('esp32_font_size');
+    if (storedFontSize) {
+      const parsed = parseFloat(storedFontSize);
+      if (!isNaN(parsed)) setFontSize(parsed);
+    }
+    const storedTheme = localStorage.getItem('esp32_theme');
+    if (storedTheme === 'light' || storedTheme === 'dark') {
+      setTheme(storedTheme);
+    }
+    const storedRegistry = localStorage.getItem('esp32_registry');
+    if (storedRegistry) {
+      try {
+        setRegistry(JSON.parse(storedRegistry));
+      } catch (e) {
+        console.error("Failed to parse stored registry", e);
+      }
+    }
+  }, []);
 
   // Compile active row command into simulated binary/hex representation
   const getCompiledHex = (row: RowItem | null): HexLine[] => {

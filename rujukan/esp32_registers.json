@@ -1,0 +1,311 @@
+{
+  "Pin Register": [
+    {
+      "name": "Sb1",
+      "gpio": 36
+    },
+    {
+      "name": "SW2",
+      "gpio": 39
+    },
+    {
+      "name": "SW3",
+      "gpio": 37
+    },
+    {
+      "name": "SW4",
+      "gpio": 34
+    },
+    {
+      "name": "SW5",
+      "gpio": 38
+    },
+    {
+      "name": "SW6",
+      "gpio": 35
+    },
+    {
+      "name": "P1",
+      "gpio": 32
+    },
+    {
+      "name": "P2",
+      "gpio": 33
+    },
+    {
+      "name": "P3",
+      "gpio": 25
+    },
+    {
+      "name": "P4",
+      "gpio": 26
+    },
+    {
+      "name": "P5",
+      "gpio": 27
+    },
+    {
+      "name": "P6",
+      "gpio": 14
+    },
+    {
+      "name": "P7",
+      "gpio": 12
+    },
+    {
+      "name": "P8",
+      "gpio": 15
+    },
+    {
+      "name": "P9",
+      "gpio": 2
+    },
+    {
+      "name": "P10",
+      "gpio": 4
+    },
+    {
+      "name": "P11",
+      "gpio": 13
+    },
+    {
+      "name": "P12",
+      "gpio": 21
+    },
+    {
+      "name": "P13",
+      "gpio": 16
+    },
+    {
+      "name": "P14",
+      "gpio": 17
+    },
+    {
+      "name": "B",
+      "gpio": 5
+    },
+    {
+      "name": "C",
+      "gpio": 22
+    },
+    {
+      "name": "D",
+      "gpio": 23
+    }
+  ],
+  "Cmd Register": [
+    {
+      "index": 1,
+      "Cmd": "PT0",
+      "x": 3,
+      "y": 2,
+      "z": 0,
+      "desc": "Pulse Pin with Timer <PT0>\n[A1]int8 Pin Output, [A2]int16 mark and [A3]int16 space in unit milli second (limited to 30 second), [A4]int8 markHigh: 0 = Low to High, 1 = High to Low.",
+      "args": [
+        {
+          "type": "int8",
+          "name": "pinOutput"
+        },
+        {
+          "type": "int16",
+          "name": "markDelay"
+        },
+        {
+          "type": "int16",
+          "name": "spaceDelay"
+        }
+      ],
+      "ints": [
+        {
+          "type": "int8",
+          "name": "state"
+        },
+        {
+          "type": "uint32",
+          "name": "delay"
+        }
+      ],
+      "rets": []
+    },
+    {
+      "index": 2,
+      "Cmd": "GP0",
+      "x": 2,
+      "y": 2,
+      "z": 1,
+      "desc": "Get Pin <GP0>\nSample [A1]int8 Pin as Input, pin data must stable within [A2]int16 duration(up to 32,760 millisecond ~ 30 second). [R1]int8result is after debounce is stable.\n\nlastState to set pin as input (once). timer is for capture and compare with millis()\n\nreturn val  is to indicate pin level (1 or 0) after it is stablised",
+      "args": [
+        {
+          "type": "int8",
+          "name": "pinInput"
+        },
+        {
+          "type": "int16",
+          "name": "debounce"
+        }
+      ],
+      "ints": [
+        {
+          "type": "int8",
+          "name": "lastState"
+        },
+        {
+          "type": "uint32",
+          "name": "timer"
+        }
+      ],
+      "rets": [
+        {
+          "type": "int8",
+          "name": "val"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "Cmd": "RTP",
+      "x": 3,
+      "y": 1,
+      "z": 0,
+      "desc": "Reflect to Pin <RTP>\n[A1]int8 Pin as output, whatever data as per pointer [A2]*label (e.g. *S1) with option to [A3]int8 Inverting the data before send it out at [A1]int8 Pin.\n\nstate to make set pin direction = output",
+      "args": [
+        {
+          "type": "int8",
+          "name": "pinOut"
+        },
+        {
+          "type": "*",
+          "name": "monitor"
+        },
+        {
+          "type": "int8",
+          "name": "invert"
+        }
+      ],
+      "ints": [
+        {
+          "type": "int8",
+          "name": "state"
+        }
+      ],
+      "rets": []
+    },
+    {
+      "index": 4,
+      "Cmd": "WFI",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "desc": "Wait for Interrupt",
+      "args": [
+        {
+          "type": "int8",
+          "name": "arg_0"
+        }
+      ],
+      "ints": [
+        {
+          "type": "int8",
+          "name": "int_0"
+        }
+      ],
+      "rets": []
+    },
+    {
+      "index": 5,
+      "Cmd": "PCN",
+      "x": 3,
+      "y": 4,
+      "z": 1,
+      "desc": "Pulse Counter",
+      "args": [
+        {
+          "type": "int8",
+          "name": "arg_0"
+        },
+        {
+          "type": "int8",
+          "name": "arg_1"
+        },
+        {
+          "type": "int8",
+          "name": "arg_2"
+        }
+      ],
+      "ints": [
+        {
+          "type": "int8",
+          "name": "int_0"
+        },
+        {
+          "type": "int8",
+          "name": "int_1"
+        },
+        {
+          "type": "int8",
+          "name": "int_2"
+        },
+        {
+          "type": "int8",
+          "name": "int_3"
+        }
+      ],
+      "rets": [
+        {
+          "type": "int8",
+          "name": "ret_0"
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "Cmd": "LLS",
+      "x": 1,
+      "y": 0,
+      "z": 1,
+      "desc": "Lateral String Storage <LSS>\n[A1]Char separation if any, 0= no separation. [R1]str:(lateral string). Label is optional if this row within row pool, especially if this row stack on top same cmd",
+      "args": [
+        {
+          "type": "char",
+          "name": "separator"
+        }
+      ],
+      "ints": [],
+      "rets": [
+        {
+          "type": "str",
+          "name": "string"
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "Cmd": "MCG",
+      "x": 3,
+      "y": 0,
+      "z": 1,
+      "desc": "Mark Count within Guard Time <MCG>\n[A1]*label containing mark value will be counted. The space/idle is determined by [A2]int8 IdleLevel. The counting will stop when the [A3]uint16 GuardTime(upto 60 second) expired. The [R1]uint16 Counted can store enough large value.",
+      "args": [
+        {
+          "type": "*",
+          "name": "view"
+        },
+        {
+          "type": "int8",
+          "name": "idle"
+        },
+        {
+          "type": "int16",
+          "name": "guard"
+        }
+      ],
+      "ints": [],
+      "rets": [
+        {
+          "type": "int8",
+          "name": "count"
+        }
+      ]
+    }
+  ]
+}
