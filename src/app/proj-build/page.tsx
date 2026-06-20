@@ -596,6 +596,10 @@ export default function ProjBuild() {
     setCanvasDraggedItem({ secId, rowIndex });
   };
   
+  const handleCanvasDragEnd = () => {
+    setCanvasDraggedItem(null);
+  };
+  
   const handleCanvasDragOver = (e: React.DragEvent) => {
     e.preventDefault(); 
   };
@@ -963,6 +967,7 @@ export default function ProjBuild() {
                           key={row.id} 
                           draggable
                           onDragStart={(e) => handleCanvasDragStart(e, node.id, rowIndex)}
+                          onDragEnd={handleCanvasDragEnd}
                           onDragOver={handleCanvasDragOver}
                           onDrop={(e) => handleCanvasDrop(e, node.id, rowIndex)}
                           onDoubleClick={(e) => handleEditRow(e, row)} 
@@ -1187,6 +1192,7 @@ export default function ProjBuild() {
                   key={row.id}
                   draggable
                   onDragStart={() => handleDragStart(index)}
+                  onDragEnd={() => setDraggedIndex(null)}
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(index)}
                   className={`flex items-center gap-2 bg-slate-50 dark:bg-[#0a0f18]/40 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 transition-colors group ${draggedIndex === index ? 'opacity-40 border-dashed border-slate-400' : ''}`}
