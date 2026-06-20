@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useApp, RegistryEntry } from '../context/AppContext';
 
 interface VariableConfig {
@@ -12,6 +13,11 @@ const DATA_TYPES_LIST = ['int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', '
 
 export default function FuncBuild() {
   const { registry, setRegistry, fontSize, setPinMacros, setCmdDetails, playChime } = useApp();
+  const router = useRouter();
+
+  const handleExit = () => {
+    router.push('/');
+  };
 
   // Lazy initialize select state based on current registry
   const [selectedCmd, setSelectedCmd] = useState<string>(() =>
@@ -1014,6 +1020,12 @@ export default function FuncBuild() {
             View
           </button>
           <div className="flex-1"></div>
+          <button
+            onClick={handleExit}
+            className="bg-emerald-500 hover:bg-emerald-600 text-white dark:text-slate-900 px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-md hover:shadow-emerald-500/20 cursor-pointer"
+          >
+            Exit
+          </button>
           <button
             onClick={handleSave}
             className="bg-emerald-500 hover:bg-emerald-600 text-white dark:text-slate-900 px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-md hover:shadow-emerald-500/20 cursor-pointer"
