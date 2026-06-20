@@ -199,27 +199,27 @@ export default function FuncBuild() {
     const stored = localStorage.getItem('esp32_commands_details');
     if (!stored) {
       const initialDetails: Record<string, any> = {
-        PT0: {
+        ZZ0: {
           args: [{ type: 'int8', name: 'pinOutput' }, { type: 'int16', name: 'markDelay' }, { type: 'int16', name: 'spaceDelay' }],
           ints: [{ type: 'int8', name: 'state' }, { type: 'uint32', name: 'delay' }],
           rets: []
         },
-        GP0: {
+        ZZ1: {
           args: [{ type: 'int8', name: 'pinInput' }, { type: 'int16', name: 'debounce' }],
           ints: [{ type: 'int8', name: 'lastState' }, { type: 'uint32', name: 'timer' }],
           rets: [{ type: 'int8', name: 'val' }]
         },
-        RTP: {
+        ZZ2: {
           args: [{ type: 'int8', name: 'arg_0' }, { type: 'int8', name: 'arg_1' }, { type: 'int8', name: 'arg_2' }],
           ints: [{ type: 'int8', name: 'int_0' }],
           rets: []
         },
-        WFI: {
+        ZZ3: {
           args: [{ type: 'int8', name: 'arg_0' }],
           ints: [{ type: 'int8', name: 'int_0' }],
           rets: []
         },
-        PCN: {
+        ZZ4: {
           args: [{ type: 'int8', name: 'arg_0' }, { type: 'int8', name: 'arg_1' }, { type: 'int8', name: 'arg_2' }],
           ints: [{ type: 'int8', name: 'int_0' }, { type: 'int8', name: 'int_1' }, { type: 'int8', name: 'int_2' }, { type: 'int8', name: 'int_3' }],
           rets: [{ type: 'int8', name: 'ret_0' }]
@@ -337,7 +337,7 @@ export default function FuncBuild() {
           setPinMacros(pinData.map(p => p.name).filter(Boolean));
 
           playChime();
-          alert("Pin register loaded and saved to internalStorage successfully!");
+          // alert("Pin register loaded and saved to internalStorage successfully!");
         } catch (err) {
           alert("Error parsing file: " + err);
         }
@@ -1164,8 +1164,8 @@ export default function FuncBuild() {
                         key={tab}
                         onClick={() => setViewModalTab(tab)}
                         className={`px-2.5 py-1 rounded text-[0.625rem] font-bold transition-all cursor-pointer ${viewModalTab === tab
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
                           }`}
                       >
                         {label}

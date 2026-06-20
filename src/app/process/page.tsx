@@ -145,7 +145,7 @@ export default function ProcessView() {
                                     }`}
                                   >
                                     <span className="text-slate-350 dark:text-slate-600 w-4 font-mono text-right shrink-0 select-none text-[10px]">{idx + 1}</span>
-                                    <span className="w-16 text-blue-600 dark:text-blue-400 font-bold truncate shrink-0" title={row.label}>{row.label || 'None'}</span>
+                                    <span className="w-16 text-blue-600 dark:text-blue-400 font-bold truncate shrink-0" title={row.label}>{row.label || ''}</span>
                                     <span className="flex-1 font-mono text-[9px] leading-tight flex flex-wrap break-all truncate">{row.command}</span>
                                   </div>
                                 ))}
