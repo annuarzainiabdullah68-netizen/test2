@@ -40,13 +40,13 @@ export const INITIAL_NODES: Record<string, NodeItem> = {
   'proj_1': { id: 'proj_1', type: 'project', name: 'Test Out', x: 100, y: 100 },
   'tab_1': { id: 'tab_1', parentId: 'proj_1', type: 'tab', name: 'TAB1', x: 220, y: 280 },
   'sec_1': { id: 'sec_1', parentId: 'tab_1', type: 'section', name: 'GGG', exec: '5000', x: 650, y: 320, rows: [
-      { id: 1, label: "Signal", command: "PT0[BTN_SW2, 1200, ~, 1]" },
-      { id: 2, label: "house", command: "LSS[, STA,User,Password]" },
+      { id: 1, label: "Signal", command: "PT0[BTN_SW2, 1200, ~]" },
+      { id: 2, label: "house", command: "LSS[]" },
       { id: 3, label: "", command: "MCG[Signal, 233, LED_P3]" }
     ]
   },
   'sec_2': { id: 'sec_2', parentId: 'tab_1', type: 'section', name: 'AAAA', exec: '0', x: 150, y: 550, rows: [
-      { id: 4, label: "DSFS", command: "PTO[ , , ]" }
+      { id: 4, label: "DSFS", command: "PT0[ , , ]" }
     ]
   },
   'sec_3': { id: 'sec_3', parentId: 'tab_1', type: 'section', name: 'SSSSS', exec: '5000', x: 400, y: 650, rows: [

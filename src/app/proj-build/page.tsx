@@ -725,8 +725,11 @@ export default function ProjBuild() {
          if (node.type === 'section' && node.rows) {
            const idx = node.rows.findIndex((r) => r.id === editRowData.id);
            if (idx !== -1) {
+             const currentCmdProto = registry.find(r => r.Cmd === editRowData.command);
+             const currentX = currentCmdProto?.x || 0;
+             const argsOnly = editRowData.args.slice(0, currentX);
              node.rows[idx].label = editRowData.label;
-             node.rows[idx].command = `${editRowData.command}[${editRowData.args.join(', ')}]`;
+             node.rows[idx].command = `${editRowData.command}[${argsOnly.join(', ')}]`;
            }
          }
        });
@@ -1292,7 +1295,7 @@ export default function ProjBuild() {
                   <div className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 shrink-0 shadow-inner">
                     <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider select-none">Constructed instruction</label>
                     <div className="w-full bg-white dark:bg-[#121824] border border-slate-300 dark:border-slate-800 text-emerald-600 dark:text-emerald-400 rounded-lg p-2 text-xs font-mono font-bold select-all tracking-tight shadow-sm">
-                      {editRowData.command}[{editRowData.args.join(', ')}]
+                      {editRowData.command}[{editRowData.args.slice(0, currentX).join(', ')}]
                     </div>
                   </div>
 
@@ -1435,6 +1438,20 @@ export default function ProjBuild() {
                           }
                         }
                         
+                        if (selectedStatRow !== 'args') {
+                          return (
+                            <div key={i} className="flex items-center justify-between bg-white dark:bg-[#121824] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-450 dark:text-slate-400 text-[10px] w-24 truncate font-mono select-none font-semibold" title={varName}>{varName}</span>
+                                <span className="text-orange-550 dark:text-orange-400 text-[9px] w-12 font-mono font-bold select-none truncate" title={varType}>{varType}</span>
+                              </div>
+                              <span className="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-mono select-none">
+                                Read-Only
+                              </span>
+                            </div>
+                          );
+                        }
+
                         return (
                           <div key={i} className="flex items-center gap-2 bg-white dark:bg-[#121824] p-1 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
                             <span className="text-slate-400 dark:text-slate-555 text-[10px] w-24 truncate font-mono select-none" title={varName}>{varName}</span>
