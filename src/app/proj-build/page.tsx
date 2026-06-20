@@ -319,7 +319,7 @@ export default function ProjBuild() {
             <div className="flex justify-end gap-3 mt-5 shrink-0 select-none">
               <button 
                 onClick={handleExit}
-                className="flex items-center gap-1.5 px-5 py-2.5 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-350 font-bold text-xs rounded-xl transition-all cursor-pointer hover:border-slate-350 dark:hover:border-slate-700"
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs rounded-xl shadow-md hover:shadow-emerald-500/20 hover:opacity-95 transition-all cursor-pointer"
                 title="Disconnect USB & return to Main Hub"
               >
                 Exit
