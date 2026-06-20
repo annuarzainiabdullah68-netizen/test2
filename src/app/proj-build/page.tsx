@@ -34,7 +34,7 @@ export default function ProjBuild() {
   const { 
     nodes, setNodes, registry, usbConnected, setUsbConnected,
     projects, setProjects, activeProjectId, setActiveProjectId, createProject, deleteProject,
-    fontSize, pinMacros, cmdDetails
+    fontSize, pinMacros, cmdDetails, pendingEditRowId, setPendingEditRowId
   } = useApp();
 
   useEffect(() => {
@@ -152,6 +152,25 @@ export default function ProjBuild() {
     canvas.addEventListener('wheel', listener, { passive: false });
     return () => canvas.removeEventListener('wheel', listener);
   }, [isModalOpen, handleWheel]);
+
+  useEffect(() => {
+    if (pendingEditRowId !== null) {
+      let targetRow: RowItem | null = null;
+      Object.values(nodes).forEach(node => {
+        if (node.type === 'section' && node.rows) {
+          const row = node.rows.find(r => r.id === pendingEditRowId);
+          if (row) {
+            targetRow = row;
+          }
+        }
+      });
+
+      if (targetRow) {
+        handleEditRow(null, targetRow);
+      }
+      setPendingEditRowId(null);
+    }
+  }, [pendingEditRowId, nodes]);
 
   const handleEditProjectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -695,8 +714,8 @@ export default function ProjBuild() {
     setEditNodeModal({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' });
   };
 
-  const handleEditRow = (e: React.MouseEvent, row: RowItem) => {
-    e.stopPropagation();
+  const handleEditRow = (e: React.MouseEvent | null, row: RowItem) => {
+    if (e) e.stopPropagation();
     // Parse prototype format like PT0[BTN_SW2, 1200, 200, 1] into state
     const match = row.command.match(/^([A-Z0-9_]+)\[(.*)\]$/);
     let cmd = 'PT0';

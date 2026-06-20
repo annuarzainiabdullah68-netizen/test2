@@ -108,6 +108,8 @@ interface AppContextType {
   cmdDetails: Record<string, any>;
   setCmdDetails: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   playChime: () => void;
+  pendingEditRowId: number | null;
+  setPendingEditRowId: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 export const playChime = () => {
@@ -233,6 +235,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [registry, setRegistry] = useState<RegistryEntry[]>(MOCK_REGISTRY);
   const [pinMacros, setPinMacros] = useState<string[]>([]);
   const [cmdDetails, setCmdDetails] = useState<Record<string, any>>({});
+  const [pendingEditRowId, setPendingEditRowId] = useState<number | null>(null);
 
   useEffect(() => {
     // Load from local storage after mount to prevent hydration mismatch
@@ -463,7 +466,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
 
       pinMacros, setPinMacros,
       cmdDetails, setCmdDetails,
-      playChime
+      playChime,
+      pendingEditRowId, setPendingEditRowId
     }}>
       {children}
     </AppContext.Provider>

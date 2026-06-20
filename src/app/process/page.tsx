@@ -7,7 +7,7 @@ import { Cpu } from 'lucide-react';
 
 export default function ProcessView() {
   const router = useRouter();
-  const { nodes, registry, activeRow, setActiveRow, getCompiledHex, usbConnected, activeProjectId, pinMacros, cmdDetails } = useApp();
+  const { nodes, registry, activeRow, setActiveRow, getCompiledHex, usbConnected, activeProjectId, pinMacros, cmdDetails, setPendingEditRowId } = useApp();
 
   useEffect(() => {
     if (!usbConnected) {
@@ -30,6 +30,11 @@ export default function ProcessView() {
       }
     }
   }, [activeRow]);
+
+  const handleRowDoubleClick = (row: RowItem) => {
+    setPendingEditRowId(row.id);
+    router.push('/proj-build');
+  };
 
   const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>({});
 
@@ -248,6 +253,7 @@ export default function ProcessView() {
                                   <div 
                                     key={row.id} 
                                     onClick={() => setActiveRow(row)}
+                                    onDoubleClick={() => handleRowDoubleClick(row)}
                                     className={`pl-2 py-1.5 cursor-pointer flex items-center gap-2 rounded-lg transition-all ${
                                       activeRow?.id === row.id 
                                         ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-slate-850 dark:text-slate-100 font-bold' 
