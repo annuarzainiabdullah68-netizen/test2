@@ -15,7 +15,8 @@ export default function GlobalHeader() {
     fontSize, setFontSize, 
     theme, setTheme, 
     activeRow, getCompiledHex,
-    activeProjectId, setActiveProjectId 
+    activeProjectId, setActiveProjectId,
+    playChime
   } = useApp();
 
   // Map route pathnames to views
@@ -83,6 +84,7 @@ export default function GlobalHeader() {
     const hexLines = getCompiledHex(activeRow);
     const rawBytes = hexLines.map(l => l.bytes).join(' ');
     
+    playChime();
     alert(`[WEB SERIAL API] Successfully initiated flash sequence!\n\nPayload Size: 48 Bytes\nInstruction: ${activeRow.command}\nHex Dump:\n${rawBytes.slice(0, 70)}...\n\nFlashing completed successfully to target /dev/ttyUSB port.`);
   };
 

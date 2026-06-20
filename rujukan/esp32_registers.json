@@ -1,7 +1,7 @@
 {
   "Pin Register": [
     {
-      "name": "Sb1",
+      "name": "SW1",
       "gpio": 36
     },
     {
@@ -259,27 +259,6 @@
     },
     {
       "index": 6,
-      "Cmd": "LLS",
-      "x": 1,
-      "y": 0,
-      "z": 1,
-      "desc": "Lateral String Storage <LSS>\n[A1]Char separation if any, 0= no separation. [R1]str:(lateral string). Label is optional if this row within row pool, especially if this row stack on top same cmd",
-      "args": [
-        {
-          "type": "char",
-          "name": "separator"
-        }
-      ],
-      "ints": [],
-      "rets": [
-        {
-          "type": "str",
-          "name": "string"
-        }
-      ]
-    },
-    {
-      "index": 7,
       "Cmd": "MCG",
       "x": 3,
       "y": 0,
@@ -304,6 +283,22 @@
         {
           "type": "int8",
           "name": "count"
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "Cmd": "LSS",
+      "x": 0,
+      "y": 0,
+      "z": 1,
+      "desc": "Lateral String Storage <LSS>\n [R1]str:(lateral string). Label is optional if this row within row pool, especially if this row stack on top same cmd",
+      "args": [],
+      "ints": [],
+      "rets": [
+        {
+          "type": "str",
+          "name": "storeString"
         }
       ]
     }

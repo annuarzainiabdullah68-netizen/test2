@@ -34,7 +34,7 @@ export default function ProjBuild() {
   const { 
     nodes, setNodes, registry, usbConnected, setUsbConnected,
     projects, setProjects, activeProjectId, setActiveProjectId, createProject, deleteProject,
-    fontSize
+    fontSize, pinMacros, cmdDetails
   } = useApp();
 
   useEffect(() => {
@@ -80,8 +80,7 @@ export default function ProjBuild() {
   
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
 
-  const [pinMacros, setPinMacros] = useState<string[]>(['BTN_SW1', 'BTN_SW2', 'BTN_SW3', 'BTN_SW4', 'BTN_SW5', 'BTN_SW6', 'LED_P1', 'LED_P2', 'LED_P3', 'LED_P4', 'LED_P5', 'LED_P6', 'LED_P7', 'LED_P8', 'LED_P9', 'LED_P10', 'LED_P11', 'LED_P12', 'LED_P13', 'LED_P14']);
-  const [cmdDetails, setCmdDetails] = useState<Record<string, any>>({});
+
 
   const getCommandDetails = (cmdName: string) => {
     const nameUpper = cmdName.toUpperCase();
@@ -120,35 +119,7 @@ export default function ProjBuild() {
     return null;
   };
 
-  useEffect(() => {
-    const loadFromStorage = () => {
-      const storedPins = localStorage.getItem('Pin Register');
-      if (storedPins) {
-        try {
-          const parsed = JSON.parse(storedPins);
-          if (Array.isArray(parsed)) {
-            setPinMacros(parsed.map((p: any) => p.name).filter(Boolean));
-          }
-        } catch {}
-      }
-      const storedCmds = localStorage.getItem('Cmd Register');
-      if (storedCmds) {
-        try {
-          const parsed = JSON.parse(storedCmds);
-          if (Array.isArray(parsed)) {
-            const map: Record<string, any> = {};
-            parsed.forEach((cmd: any) => {
-              map[cmd.Cmd.toUpperCase()] = cmd;
-            });
-            setCmdDetails(map);
-          }
-        } catch {}
-      }
-    };
-    loadFromStorage();
-    window.addEventListener('focus', loadFromStorage);
-    return () => window.removeEventListener('focus', loadFromStorage);
-  }, [registry]);
+
 
   const [editNodeModal, setEditNodeModal] = useState<EditNodeState>({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' });
   const [editRowData, setEditRowData] = useState<EditRowState>({ id: null, label: '', command: 'PT0', args: [] });
@@ -1103,7 +1074,7 @@ export default function ProjBuild() {
                   setManualReqNumber('');
                 }} 
                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                disabled={!newItemName.trim() || (executionMode === 'Manual' && !manualReqNumber.trim())}
+                disabled={(promptModal.type !== 'row' && !newItemName.trim()) || (promptModal.type === 'section' && executionMode === 'Manual' && !manualReqNumber.trim())}
               >
                 Create
               </button>

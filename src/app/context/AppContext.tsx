@@ -102,7 +102,53 @@ interface AppContextType {
   setActiveProjectId: (id: string | null) => void;
   createProject: (name: string, remark: string) => void;
   deleteProject: (id: string) => void;
+
+  pinMacros: string[];
+  setPinMacros: React.Dispatch<React.SetStateAction<string[]>>;
+  cmdDetails: Record<string, any>;
+  setCmdDetails: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  playChime: () => void;
 }
+
+export const playChime = () => {
+  try {
+    const AudioContextClass = typeof window !== 'undefined' ? (window.AudioContext || (window as any).webkitAudioContext) : null;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    
+    const playNote = (freq: number, startTime: number, duration: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+      
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+
+    const now = ctx.currentTime;
+    playNote(1046.50, now, 0.7);        // C6
+    playNote(1318.51, now + 0.08, 0.7); // E6
+    playNote(1567.98, now + 0.16, 0.9); // G6
+    playNote(2093.00, now + 0.24, 1.2); // C7
+
+    setTimeout(() => {
+      try {
+        ctx.close();
+      } catch {}
+    }, 1500);
+  } catch (e) {
+    console.warn("Web Audio API not supported or blocked: ", e);
+  }
+};
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -185,6 +231,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [nodes, setNodes] = useState<Record<string, NodeItem>>({});
   const [registry, setRegistry] = useState<RegistryEntry[]>(MOCK_REGISTRY);
+  const [pinMacros, setPinMacros] = useState<string[]>([]);
+  const [cmdDetails, setCmdDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {
     // Load from local storage after mount to prevent hydration mismatch
@@ -212,6 +260,49 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       } catch (e) {
         console.error("Failed to parse stored registry", e);
       }
+    }
+    const internalStore = localStorage.getItem('internalStorage') || localStorage.getItem('internalStorege');
+    let pinsFromInternal = null;
+    let cmdsFromInternal = null;
+    if (internalStore) {
+      try {
+        const parsed = JSON.parse(internalStore);
+        if (parsed && typeof parsed === 'object') {
+          if (Array.isArray(parsed)) {
+            pinsFromInternal = parsed;
+          } else {
+            if (parsed["Pin Register"]) pinsFromInternal = parsed["Pin Register"];
+            if (parsed["Cmd Register"]) cmdsFromInternal = parsed["Cmd Register"];
+          }
+        }
+      } catch {}
+    }
+
+    const storedPins = pinsFromInternal ? JSON.stringify(pinsFromInternal) : localStorage.getItem('Pin Register');
+    let pinsToUse = [];
+    if (storedPins) {
+      try {
+        const parsed = JSON.parse(storedPins);
+        if (Array.isArray(parsed)) {
+          pinsToUse = parsed;
+        }
+      } catch {}
+    }
+    
+    setPinMacros(pinsToUse.map((p: any) => p.name).filter(Boolean));
+
+    const storedCmds = cmdsFromInternal ? JSON.stringify(cmdsFromInternal) : localStorage.getItem('Cmd Register');
+    if (storedCmds) {
+      try {
+        const parsed = JSON.parse(storedCmds);
+        if (Array.isArray(parsed)) {
+          const map: Record<string, any> = {};
+          parsed.forEach((cmd: any) => {
+            map[cmd.Cmd.toUpperCase()] = cmd;
+          });
+          setCmdDetails(map);
+        }
+      } catch {}
     }
   }, []);
 
@@ -368,7 +459,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       projects, setProjects,
       activeProjectId, setActiveProjectId,
       createProject,
-      deleteProject
+      deleteProject,
+
+      pinMacros, setPinMacros,
+      cmdDetails, setCmdDetails,
+      playChime
     }}>
       {children}
     </AppContext.Provider>

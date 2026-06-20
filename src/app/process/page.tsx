@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp, RowItem } from '../context/AppContext';
 import { Cpu } from 'lucide-react';
 
 export default function ProcessView() {
   const router = useRouter();
-  const { nodes, registry, activeRow, setActiveRow, getCompiledHex, usbConnected, activeProjectId } = useApp();
+  const { nodes, registry, activeRow, setActiveRow, getCompiledHex, usbConnected, activeProjectId, pinMacros } = useApp();
 
   useEffect(() => {
     if (!usbConnected) {
@@ -16,6 +16,21 @@ export default function ProcessView() {
       router.replace('/proj-build');
     }
   }, [usbConnected, activeProjectId, router]);
+
+  const cmdContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (activeRow && cmdContainerRef.current) {
+      const activeEl = cmdContainerRef.current.querySelector('[data-active="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }
+    }
+  }, [activeRow]);
+
   const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>({});
 
   const toggleNode = (id: string) => {
@@ -25,20 +40,7 @@ export default function ProcessView() {
   // Extract utilized hardware pins dynamically from all command rows
   const getUsedPins = () => {
     const pins = new Set<string>();
-    const customPins = new Set<string>();
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('Pin Register');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            parsed.forEach((p: any) => {
-              if (p && p.name) customPins.add(p.name);
-            });
-          }
-        } catch {}
-      }
-    }
+    const customPins = new Set<string>(pinMacros);
 
     Object.values(nodes).forEach(node => {
       if (node.type === 'section' && node.rows) {
@@ -173,11 +175,18 @@ export default function ProcessView() {
               <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active command metadata</span>
             </div>
             
-            <div className="p-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/40 font-mono text-[10px] text-slate-655 dark:text-slate-400 space-y-1 transition-colors shrink-0 max-h-36 overflow-y-auto">
+            <div 
+              ref={cmdContainerRef}
+              className="p-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/40 font-mono text-[10px] text-slate-655 dark:text-slate-400 space-y-1 transition-colors shrink-0 max-h-36 overflow-y-auto"
+            >
               {registry.map(c => {
                 const isActive = activeRow?.command.startsWith(c.Cmd);
                 return (
-                  <div key={c.Cmd} className={`flex gap-2 px-2 py-1 rounded-md transition-colors ${isActive ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-900/40'}`}>
+                  <div 
+                    key={c.Cmd} 
+                    data-active={isActive ? "true" : "false"}
+                    className={`flex gap-2 px-2 py-1 rounded-md transition-colors ${isActive ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-900/40'}`}
+                  >
                     <span className="w-10 shrink-0 font-bold">{c.Cmd}</span>
                     <span className="truncate flex-1">{c.Cmd}: ({c.x} args) {"->"} {c.z} rets</span>
                   </div>

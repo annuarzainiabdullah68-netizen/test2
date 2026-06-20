@@ -11,7 +11,7 @@ interface VariableConfig {
 const DATA_TYPES_LIST = ['int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64', 'float', 'double', 'char', 'str', '*'];
 
 export default function FuncBuild() {
-  const { registry, setRegistry, fontSize } = useApp();
+  const { registry, setRegistry, fontSize, setPinMacros, setCmdDetails, playChime } = useApp();
 
   // Lazy initialize select state based on current registry
   const [selectedCmd, setSelectedCmd] = useState<string>(() =>
@@ -81,24 +81,116 @@ export default function FuncBuild() {
     activeTab: 'list'
   });
 
-  const [pinRegister, setPinRegister] = useState<string>(
-    [
-      'BTN_SW1', 'BTN_SW2', 'BTN_SW3', 'BTN_SW4', 'BTN_SW5', 'BTN_SW6',
-      'LED_P1', 'LED_P2', 'LED_P3', 'LED_P4', 'LED_P5', 'LED_P6', 'LED_P7',
-      'LED_P8', 'LED_P9', 'LED_P10', 'LED_P11', 'LED_P12', 'LED_P13', 'LED_P14'
-    ].join('\n')
-  );
+  const [pinRegister, setPinRegister] = useState<string>('');
+  const isFirstRender = React.useRef(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('esp32_pin_register');
-    if (stored) {
-      setPinRegister(stored);
+    const storedPinRegister = localStorage.getItem('Pin Register') || localStorage.getItem('internalStorage') || localStorage.getItem('internalStorege');
+    let parsed = null;
+    if (storedPinRegister) {
+      try {
+        const loadedObj = JSON.parse(storedPinRegister);
+        if (loadedObj && typeof loadedObj === 'object') {
+          if (Array.isArray(loadedObj)) {
+            parsed = loadedObj;
+          } else {
+            parsed = loadedObj["Pin Register"] || loadedObj["pinRegister"];
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse Pin Register", e);
+      }
+    }
+
+    if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+      const linesText = parsed.map((p: any) => `${p.name || ''}${p.gpio !== undefined ? ' ' + p.gpio : ''}`).join('\n');
+      setPinRegister(linesText);
+    } else {
+      const stored = localStorage.getItem('esp32_pin_register');
+      if (stored) {
+        setPinRegister(stored);
+      } else {
+        setPinRegister('');
+      }
     }
   }, []);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     localStorage.setItem('esp32_pin_register', pinRegister);
-  }, [pinRegister]);
+    const lines = pinRegister.split('\n');
+    const pinData = lines.map(line => {
+      const parts = line.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return { name: parts[0], gpio: parseInt(parts[1], 10) || 0 };
+      }
+      if (parts.length === 1 && parts[0].trim()) {
+        return { name: parts[0], gpio: 0 };
+      }
+      return null;
+    }).filter((p): p is { name: string; gpio: number } => p !== null);
+    localStorage.setItem('Pin Register', JSON.stringify(pinData));
+
+    // Read and update combined internalStorage
+    const stored = localStorage.getItem('internalStorage') || localStorage.getItem('internalStorege');
+    let currentStore: any = {};
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          currentStore = parsed;
+        }
+      } catch { }
+    }
+    currentStore["Pin Register"] = pinData;
+
+    localStorage.setItem('internalStorage', JSON.stringify(currentStore));
+    localStorage.setItem('internalStorege', JSON.stringify(currentStore));
+    setPinMacros(pinData.map(p => p.name).filter(Boolean));
+  }, [pinRegister, setPinMacros]);
+
+  // Load and synchronize initial/loaded command details from registry/localStorage
+  useEffect(() => {
+    if (registry.length > 0) {
+      const initialCmd = selectedCmd || registry[0].Cmd;
+      const activeCmd = registry.some(r => r.Cmd === initialCmd) ? initialCmd : registry[0].Cmd;
+
+      setSelectedCmd(activeCmd);
+      setCmdName(activeCmd);
+
+      const found = registry.find(r => r.Cmd === activeCmd);
+      if (found) {
+        setCmdDesc(found.desc || '');
+
+        const storedDetails = localStorage.getItem('esp32_commands_details');
+        const detailsMap = storedDetails ? JSON.parse(storedDetails) : {};
+        const details = detailsMap[activeCmd];
+
+        if (details) {
+          setArgs(details.args || []);
+          setInts(details.ints || []);
+          setRets(details.rets || []);
+        } else {
+          if (found.Cmd === 'PT0') {
+            setArgs([{ type: 'int8', name: 'pinOutput' }, { type: 'int16', name: 'markDelay' }, { type: 'int16', name: 'spaceDelay' }]);
+            setInts([{ type: 'int8', name: 'state' }, { type: 'uint32', name: 'delay' }]);
+            setRets([]);
+          } else if (found.Cmd === 'GP0') {
+            setArgs([{ type: 'int8', name: 'pinInput' }, { type: 'int16', name: 'debounce' }]);
+            setInts([{ type: 'int8', name: 'lastState' }, { type: 'uint32', name: 'timer' }]);
+            setRets([{ type: 'int8', name: 'val' }]);
+          } else {
+            setArgs(Array.from({ length: found.x }, (_, i) => ({ type: 'int8', name: `arg_${i}` })));
+            setInts(Array.from({ length: found.y }, (_, i) => ({ type: 'int8', name: `int_${i}` })));
+            setRets(Array.from({ length: found.z }, (_, i) => ({ type: 'int8', name: `ret_${i}` })));
+          }
+        }
+      }
+    }
+  }, [registry]);
 
   const [showViewModal, setShowViewModal] = useState<boolean>(false);
   const [viewModalTab, setViewModalTab] = useState<'pins' | 'cmds' | 'raw'>('pins');
@@ -136,6 +228,24 @@ export default function FuncBuild() {
       localStorage.setItem('esp32_commands_details', JSON.stringify(initialDetails));
     }
   }, []);
+
+  // Dynamically save active command prototype changes into local details map immediately
+  useEffect(() => {
+    if (!selectedCmd) return;
+    const storedDetails = localStorage.getItem('esp32_commands_details');
+    const detailsMap = storedDetails ? JSON.parse(storedDetails) : {};
+
+    const current = detailsMap[selectedCmd];
+    if (
+      !current ||
+      JSON.stringify(current.args) !== JSON.stringify(args) ||
+      JSON.stringify(current.ints) !== JSON.stringify(ints) ||
+      JSON.stringify(current.rets) !== JSON.stringify(rets)
+    ) {
+      detailsMap[selectedCmd] = { args, ints, rets };
+      localStorage.setItem('esp32_commands_details', JSON.stringify(detailsMap));
+    }
+  }, [args, ints, rets, selectedCmd]);
 
   const getSavedRegisters = () => {
     let pinData: { name: string; gpio: number }[] = [];
@@ -186,17 +296,48 @@ export default function FuncBuild() {
       reader.onload = (evt) => {
         try {
           const content = evt.target?.result as string;
+          let finalPinsText = content;
           if (file.name.endsWith('.json')) {
             const parsed = JSON.parse(content);
+            let pinsArray: any[] = [];
             if (Array.isArray(parsed)) {
-              setPinRegister(parsed.join('\n'));
-            } else {
-              setPinRegister(content);
+              pinsArray = parsed;
+            } else if (parsed && typeof parsed === 'object') {
+              pinsArray = parsed["Pin Register"] || parsed["pinRegister"] || [];
             }
-          } else {
-            setPinRegister(content);
+
+            if (Array.isArray(pinsArray) && pinsArray.length > 0) {
+              if (typeof pinsArray[0] === 'object' && pinsArray[0] !== null) {
+                finalPinsText = pinsArray.map((p: any) => `${p.name || ''}${p.gpio !== undefined ? ' ' + p.gpio : ''}`).join('\n');
+              } else {
+                finalPinsText = pinsArray.join('\n');
+              }
+            }
           }
-          alert("Pin register loaded successfully!");
+
+          setPinRegister(finalPinsText);
+
+          // Save immediately to internalStorage, internalStorege and standard keys
+          const lines = finalPinsText.split('\n');
+          const pinData = lines.map(line => {
+            const parts = line.trim().split(/\s+/);
+            if (parts.length >= 2) {
+              return { name: parts[0], gpio: parseInt(parts[1], 10) || 0 };
+            }
+            if (parts.length === 1 && parts[0].trim()) {
+              return { name: parts[0], gpio: 0 };
+            }
+            return null;
+          }).filter((p): p is { name: string; gpio: number } => p !== null);
+
+          localStorage.setItem('esp32_pin_register', finalPinsText);
+          localStorage.setItem('Pin Register', JSON.stringify(pinData));
+          localStorage.setItem('internalStorage', JSON.stringify(pinData));
+          localStorage.setItem('internalStorege', JSON.stringify(pinData));
+          setPinMacros(pinData.map(p => p.name).filter(Boolean));
+
+          playChime();
+          alert("Pin register loaded and saved to internalStorage successfully!");
         } catch (err) {
           alert("Error parsing file: " + err);
         }
@@ -232,11 +373,11 @@ export default function FuncBuild() {
       const found = registry.find(r => r.Cmd === val);
       if (found) {
         setCmdDesc(found.desc);
-        
+
         const storedDetails = localStorage.getItem('esp32_commands_details');
         const detailsMap = storedDetails ? JSON.parse(storedDetails) : {};
         const details = detailsMap[val];
-        
+
         if (details) {
           setArgs(details.args || []);
           setInts(details.ints || []);
@@ -310,7 +451,7 @@ export default function FuncBuild() {
       return;
     }
     const targetCmd = cmdName.toUpperCase();
-    
+
     // 1. Update the registry
     let updatedRegistry: RegistryEntry[] = [];
     setRegistry(prev => {
@@ -339,7 +480,7 @@ export default function FuncBuild() {
       }
       return updatedRegistry;
     });
-    
+
     // We compute nextRegistry directly to use synchronously
     const nextRegistry = registry.map(item => {
       if (item.Cmd === selectedCmd) {
@@ -366,11 +507,11 @@ export default function FuncBuild() {
     // 2. Update the details map
     const storedDetails = localStorage.getItem('esp32_commands_details');
     const detailsMap = storedDetails ? JSON.parse(storedDetails) : {};
-    
+
     if (selectedCmd && selectedCmd !== targetCmd) {
       delete detailsMap[selectedCmd];
     }
-    
+
     detailsMap[targetCmd] = {
       args: args,
       ints: ints,
@@ -384,6 +525,9 @@ export default function FuncBuild() {
       const parts = line.trim().split(/\s+/);
       if (parts.length >= 2) {
         return { name: parts[0], gpio: parseInt(parts[1], 10) || 0 };
+      }
+      if (parts.length === 1 && parts[0].trim()) {
+        return { name: parts[0], gpio: 0 };
       }
       return null;
     }).filter(Boolean);
@@ -410,8 +554,24 @@ export default function FuncBuild() {
     });
     localStorage.setItem('Cmd Register', JSON.stringify(cmdRegisterData));
 
+    // Save combined registers to internalStorage & internalStorege
+    const combinedData = {
+      "Pin Register": pinData,
+      "Cmd Register": cmdRegisterData
+    };
+    localStorage.setItem('internalStorage', JSON.stringify(combinedData));
+    localStorage.setItem('internalStorege', JSON.stringify(combinedData));
+
+    // Update global context cmdDetails
+    const cmdDetailsMap: Record<string, any> = {};
+    cmdRegisterData.forEach((cmd: any) => {
+      cmdDetailsMap[cmd.Cmd.toUpperCase()] = cmd;
+    });
+    setCmdDetails(cmdDetailsMap);
+
     setSelectedCmd(targetCmd);
-    alert(`Registers and command prototype '${targetCmd}' saved successfully!`);
+    playChime();
+    // alert(`Registers and command prototype '${targetCmd}' saved successfully!`);
   };
 
   const handleDelete = () => {
@@ -424,6 +584,40 @@ export default function FuncBuild() {
 
     const nextRegistry = registry.filter(r => r.Cmd !== selectedCmd);
     setRegistry(nextRegistry);
+
+    // Clean details map
+    const storedDetails = localStorage.getItem('esp32_commands_details');
+    const detailsMap = storedDetails ? JSON.parse(storedDetails) : {};
+    delete detailsMap[selectedCmd];
+    localStorage.setItem('esp32_commands_details', JSON.stringify(detailsMap));
+
+    // Update Cmd Register in localStorage
+    const cmdRegisterData = nextRegistry.map((item, idx) => {
+      const details = detailsMap[item.Cmd] || {
+        args: Array.from({ length: item.x }, (_, i) => ({ type: 'int8', name: `arg_${i}` })),
+        ints: Array.from({ length: item.y }, (_, i) => ({ type: 'int8', name: `int_${i}` })),
+        rets: Array.from({ length: item.z }, (_, i) => ({ type: 'int8', name: `ret_${i}` }))
+      };
+      return {
+        index: idx + 1,
+        Cmd: item.Cmd,
+        x: item.x,
+        y: item.y,
+        z: item.z,
+        desc: item.desc,
+        args: details.args || [],
+        ints: details.ints || [],
+        rets: details.rets || []
+      };
+    });
+    localStorage.setItem('Cmd Register', JSON.stringify(cmdRegisterData));
+
+    // Update global context cmdDetails
+    const cmdDetailsMap: Record<string, any> = {};
+    cmdRegisterData.forEach((cmd: any) => {
+      cmdDetailsMap[cmd.Cmd.toUpperCase()] = cmd;
+    });
+    setCmdDetails(cmdDetailsMap);
 
     // Pick a new selected item
     const nextSelected = nextRegistry[0];
@@ -464,7 +658,7 @@ export default function FuncBuild() {
         try {
           const content = evt.target?.result as string;
           const imported = JSON.parse(content);
-          
+
           let parsedRegistry: RegistryEntry[] = [];
           let parsedPinsText = '';
 
@@ -486,7 +680,7 @@ export default function FuncBuild() {
                 z: item.z ?? (item.rets?.length || 0),
                 desc: item.desc || ''
               }));
-              
+
               const detailedConfigs: Record<string, any> = {};
               cmdRegData.forEach((item: any) => {
                 if (item.Cmd) {
@@ -514,15 +708,44 @@ export default function FuncBuild() {
             if (parsedPinsText) {
               setPinRegister(parsedPinsText);
             }
+
+            // Save Cmd Register in localStorage & update global context cmdDetails
+            const storedDetails = localStorage.getItem('esp32_commands_details');
+            const detailsMap = storedDetails ? JSON.parse(storedDetails) : {};
+            const cmdRegisterData = parsedRegistry.map((item, idx) => {
+              const details = detailsMap[item.Cmd] || {
+                args: Array.from({ length: item.x }, (_, i) => ({ type: 'int8', name: `arg_${i}` })),
+                ints: Array.from({ length: item.y }, (_, i) => ({ type: 'int8', name: `int_${i}` })),
+                rets: Array.from({ length: item.z }, (_, i) => ({ type: 'int8', name: `ret_${i}` }))
+              };
+              return {
+                index: idx + 1,
+                Cmd: item.Cmd,
+                x: item.x,
+                y: item.y,
+                z: item.z,
+                desc: item.desc,
+                args: details.args || [],
+                ints: details.ints || [],
+                rets: details.rets || []
+              };
+            });
+            localStorage.setItem('Cmd Register', JSON.stringify(cmdRegisterData));
+
+            const cmdDetailsMap: Record<string, any> = {};
+            cmdRegisterData.forEach((cmd: any) => {
+              cmdDetailsMap[cmd.Cmd.toUpperCase()] = cmd;
+            });
+            setCmdDetails(cmdDetailsMap);
+
+            playChime();
             alert("Registers imported successfully and page repopulated!");
-            
+
             const first = parsedRegistry[0];
             setSelectedCmd(first.Cmd);
             setCmdName(first.Cmd);
             setCmdDesc(first.desc || '');
 
-            const storedDetails = localStorage.getItem('esp32_commands_details');
-            const detailsMap = storedDetails ? JSON.parse(storedDetails) : {};
             const details = detailsMap[first.Cmd];
             if (details) {
               setArgs(details.args || []);
@@ -562,6 +785,37 @@ export default function FuncBuild() {
   const handleImportFromPreview = () => {
     if (previewModal.content && previewModal.content.length > 0) {
       setRegistry(previewModal.content);
+
+      // Update Cmd Register in localStorage and global context cmdDetails
+      const storedDetails = localStorage.getItem('esp32_commands_details');
+      const detailsMap = storedDetails ? JSON.parse(storedDetails) : {};
+      const cmdRegisterData = previewModal.content.map((item, idx) => {
+        const details = detailsMap[item.Cmd] || {
+          args: Array.from({ length: item.x }, (_, i) => ({ type: 'int8', name: `arg_${i}` })),
+          ints: Array.from({ length: item.y }, (_, i) => ({ type: 'int8', name: `int_${i}` })),
+          rets: Array.from({ length: item.z }, (_, i) => ({ type: 'int8', name: `ret_${i}` }))
+        };
+        return {
+          index: idx + 1,
+          Cmd: item.Cmd,
+          x: item.x,
+          y: item.y,
+          z: item.z,
+          desc: item.desc,
+          args: details.args || [],
+          ints: details.ints || [],
+          rets: details.rets || []
+        };
+      });
+      localStorage.setItem('Cmd Register', JSON.stringify(cmdRegisterData));
+
+      const cmdDetailsMap: Record<string, any> = {};
+      cmdRegisterData.forEach((cmd: any) => {
+        cmdDetailsMap[cmd.Cmd.toUpperCase()] = cmd;
+      });
+      setCmdDetails(cmdDetailsMap);
+
+      playChime();
       alert("Command registry imported successfully from preview!");
       const first = previewModal.content[0];
       setSelectedCmd(first.Cmd);
@@ -655,8 +909,8 @@ export default function FuncBuild() {
                   key={type}
                   onClick={() => setActivePane(type)}
                   className={`flex items-center justify-between relative rounded-lg cursor-pointer transition-all p-2 select-none border ${isActive
-                      ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/60 font-semibold'
-                      : 'bg-white dark:bg-[#0a0f18] border-transparent hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                    ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/60 font-semibold'
+                    : 'bg-white dark:bg-[#0a0f18] border-transparent hover:bg-slate-100 dark:hover:bg-slate-800/50'
                     }`}
                 >
                   <label className={`text-xs cursor-pointer transition-colors ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{labels[type]}</label>
@@ -673,8 +927,8 @@ export default function FuncBuild() {
                       onFocus={() => setActivePane(type)}
                       onClick={(e) => e.stopPropagation()}
                       className={`w-12 bg-white dark:bg-[#121824] border text-center text-slate-800 dark:text-slate-200 rounded p-1 text-xs transition-colors focus:border-blue-500 outline-none shadow-sm font-bold ${isAtMax
-                          ? 'border-amber-400 dark:border-amber-600 text-amber-600 dark:text-amber-400'
-                          : 'border-slate-300 dark:border-slate-800'
+                        ? 'border-amber-400 dark:border-amber-600 text-amber-600 dark:text-amber-400'
+                        : 'border-slate-300 dark:border-slate-800'
                         }`}
                     />
                   </div>
@@ -819,8 +1073,8 @@ export default function FuncBuild() {
                 <button
                   onClick={() => setPreviewModal(prev => ({ ...prev, activeTab: 'list' }))}
                   className={`px-2 py-1 rounded text-[0.625rem] font-bold transition-all ${previewModal.activeTab === 'list'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                 >
                   Command List
@@ -828,8 +1082,8 @@ export default function FuncBuild() {
                 <button
                   onClick={() => setPreviewModal(prev => ({ ...prev, activeTab: 'json' }))}
                   className={`px-2 py-1 rounded text-[0.625rem] font-bold transition-all ${previewModal.activeTab === 'json'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                 >
                   Raw JSON
@@ -894,7 +1148,7 @@ export default function FuncBuild() {
       {showViewModal && (() => {
         const { pinData, cmdData } = getSavedRegisters();
         const exportJSON = JSON.stringify({ "Pin Register": pinData, "Cmd Register": cmdData }, null, 2);
-        
+
         return (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-3xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
@@ -909,11 +1163,10 @@ export default function FuncBuild() {
                       <button
                         key={tab}
                         onClick={() => setViewModalTab(tab)}
-                        className={`px-2.5 py-1 rounded text-[0.625rem] font-bold transition-all cursor-pointer ${
-                          viewModalTab === tab
+                        className={`px-2.5 py-1 rounded text-[0.625rem] font-bold transition-all cursor-pointer ${viewModalTab === tab
                             ? 'bg-blue-600 text-white shadow-sm'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
-                        }`}
+                          }`}
                       >
                         {label}
                       </button>
@@ -962,7 +1215,7 @@ export default function FuncBuild() {
                             <span className="text-[0.625rem] bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-900/40">Rets (Z): {cmd.z}</span>
                           </div>
                         </div>
-                        
+
                         <div className="bg-slate-50 dark:bg-[#0a0f18]/60 p-2 rounded border border-slate-200 dark:border-slate-800/80 font-mono text-[11px] text-emerald-600 dark:text-emerald-400">
                           <span className="text-slate-400 dark:text-slate-500 mr-2 select-none">Prototype:</span>
                           {cmd.Cmd}: {cmd.rets.length > 0 ? cmd.rets.map((r: any) => r.type).join(', ') + ' ' : ''}({cmd.args.map((a: any) => a.type).join(', ')}){cmd.ints.length > 0 ? ' {' + cmd.ints.map((i: any) => i.type).join(', ') + '}' : ''}
