@@ -7,7 +7,7 @@ import { Cpu } from 'lucide-react';
 
 export default function ProcessView() {
   const router = useRouter();
-  const { nodes, registry, activeRow, setActiveRow, getCompiledHex, usbConnected, activeProjectId, pinMacros } = useApp();
+  const { nodes, registry, activeRow, setActiveRow, getCompiledHex, usbConnected, activeProjectId, pinMacros, cmdDetails } = useApp();
 
   useEffect(() => {
     if (!usbConnected) {
@@ -78,6 +78,101 @@ export default function ProcessView() {
 
 
 
+  const renderComposedRow = () => {
+    if (!activeRow) return 'Select a command row from hierarchy...';
+
+    // Parse command
+    const match = activeRow.command.match(/^([A-Z0-9_]+)\[(.*)\]$/);
+    const cmdName = match ? match[1] : (activeRow.command.split('[')[0] || 'CMD');
+    const argsStr = match ? match[2] : '';
+    const rowArgs = argsStr.split(',').map(s => s.trim());
+
+    // Look up command details
+    const details = cmdDetails[cmdName.toUpperCase()] || registry.find(r => r.Cmd === cmdName.toUpperCase());
+
+    if (!details) {
+      // Fallback if prototype is not found
+      return (
+        <span className="font-mono text-xs">
+          {activeRow.label ? `${activeRow.label} : ` : ''}
+          {activeRow.command}
+        </span>
+      );
+    }
+
+    const x = details.x ?? 0;
+    const y = details.y ?? 0;
+    const z = details.z ?? 0;
+
+    // Get argument inputs
+    const argTypes = details.args || Array.from({ length: x }, (_, i) => ({ type: 'int8', name: `arg_${i}` }));
+    const formattedArgs: React.ReactNode[] = [];
+    for (let i = 0; i < x; i++) {
+      const type = argTypes[i]?.type || 'int8';
+      const val = rowArgs[i] !== undefined && rowArgs[i] !== '' ? rowArgs[i] : '';
+      formattedArgs.push(
+        <span key={i}>
+          {i > 0 && ', '}
+          <span className="text-blue-500 dark:text-blue-400 font-bold italic">{type}</span>
+          {val && ` ${val}`}
+        </span>
+      );
+    }
+
+    // Get internal variable types
+    const intTypes = details.ints || Array.from({ length: y }, (_, i) => ({ type: 'int8', name: `int_${i}` }));
+    const formattedInts: React.ReactNode[] = [];
+    for (let i = 0; i < y; i++) {
+      const type = intTypes[i]?.type || 'int8';
+      formattedInts.push(
+        <span key={i} className="text-emerald-500 dark:text-emerald-400 font-bold italic">
+          {i > 0 && ', '}
+          {type}
+        </span>
+      );
+    }
+
+    // Get return value types
+    const retTypes = details.rets || Array.from({ length: z }, (_, i) => ({ type: 'int8', name: `ret_${i}` }));
+    const formattedRets: React.ReactNode[] = [];
+    for (let i = 0; i < z; i++) {
+      const type = retTypes[i]?.type || 'int8';
+      formattedRets.push(
+        <span key={i} className="text-red-500 font-bold italic">
+          {i > 0 && ', '}
+          {type}
+        </span>
+      );
+    }
+
+    return (
+      <span className="font-mono text-xs select-text">
+        {activeRow.label && (
+          <span className="text-slate-800 dark:text-slate-200 font-bold">
+            {activeRow.label} :{' '}
+          </span>
+        )}
+        <span className="text-emerald-600 dark:text-emerald-450 font-bold">{cmdName}</span>
+        {formattedRets.length > 0 && (
+          <>
+            <span className="text-slate-500 dark:text-slate-400 font-bold"> : </span>
+            {formattedRets}
+          </>
+        )}
+        <span className="text-slate-500 dark:text-slate-400"> (</span>
+        {formattedArgs}
+        <span className="text-slate-500 dark:text-slate-400">)</span>
+        {formattedInts.length > 0 && (
+          <>
+            <span className="text-slate-500 dark:text-slate-400">{" {"}</span>
+            {formattedInts}
+            <span className="text-slate-500 dark:text-slate-400">{"}"}</span>
+          </>
+        )}
+      </span>
+    );
+  };
+
   const hexLines = getCompiledHex(activeRow);
 
   return (
@@ -87,7 +182,7 @@ export default function ProcessView() {
       <div className="bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 font-mono text-xs text-green-600 dark:text-emerald-450 flex items-center gap-2 transition-colors shrink-0 shadow-sm select-none">
         <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-widest font-sans font-bold">Composed Row View:</span>
         <span className="font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
-          {activeRow ? `${activeRow.label ? activeRow.label + ' : ' : ''}${activeRow.command}` : 'Select a command row from hierarchy...'}
+          {renderComposedRow()}
         </span>
       </div>
 
