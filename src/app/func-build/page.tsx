@@ -1040,7 +1040,7 @@ export default function FuncBuild() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30">
-              <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100">Create New Command</h2>
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Create New Command</h2>
             </div>
             <div className="p-4">
               <label className="block text-[0.625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider select-none">Command Name</label>
@@ -1056,7 +1056,7 @@ export default function FuncBuild() {
             <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-end gap-2 shrink-0">
               <button
                 onClick={() => { setShowNewCmdModal(false); setNewCmdInput(''); }}
-                className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-650 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -1077,7 +1077,7 @@ export default function FuncBuild() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-between items-center shrink-0">
-              <h2 className="text-sm font-bold text-slate-855 dark:text-slate-100 flex items-center gap-1.5">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                 <span>Preview Registry:</span>
                 <span className="text-blue-600 dark:text-blue-400 font-mono text-xs">{previewModal.filename}</span>
               </h2>
@@ -1086,7 +1086,7 @@ export default function FuncBuild() {
                   onClick={() => setPreviewModal(prev => ({ ...prev, activeTab: 'list' }))}
                   className={`px-2 py-1 rounded text-[0.625rem] font-bold transition-all ${previewModal.activeTab === 'list'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                 >
                   Command List
@@ -1095,7 +1095,7 @@ export default function FuncBuild() {
                   onClick={() => setPreviewModal(prev => ({ ...prev, activeTab: 'json' }))}
                   className={`px-2 py-1 rounded text-[0.625rem] font-bold transition-all ${previewModal.activeTab === 'json'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                 >
                   Raw JSON
@@ -1127,7 +1127,7 @@ export default function FuncBuild() {
                     </div>
                   ))}
                   {(!previewModal.content || previewModal.content.length === 0) && (
-                    <div className="text-xs text-slate-400 dark:text-slate-505 italic text-center py-6">
+                    <div className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-6">
                       No commands found in this file.
                     </div>
                   )}
@@ -1142,7 +1142,7 @@ export default function FuncBuild() {
             <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-between items-center shrink-0">
               <button
                 onClick={() => setPreviewModal(prev => ({ ...prev, isOpen: false }))}
-                className="px-3 py-1.5 border border-slate-350 dark:border-slate-800 text-slate-650 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
               >
                 Close Preview
               </button>
@@ -1177,7 +1177,7 @@ export default function FuncBuild() {
                         onClick={() => setViewModalTab(tab)}
                         className={`px-2.5 py-1 rounded text-[0.625rem] font-bold transition-all cursor-pointer ${viewModalTab === tab
                           ? 'bg-blue-600 text-white shadow-sm'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                           }`}
                       >
                         {label}
@@ -1190,18 +1190,18 @@ export default function FuncBuild() {
               <div className="p-4 flex-1 overflow-y-auto min-h-0 bg-slate-50/50 dark:bg-[#0d121c]/40">
                 {viewModalTab === 'pins' && (
                   <div className="space-y-3">
-                    <div className="text-[10px] text-slate-450 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 select-none">
+                    <div className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 select-none">
                       Parsed Pin Mappings ({pinData.length} total)
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {pinData.map((pin, i) => (
-                        <div key={i} className="bg-white dark:bg-[#121824] p-3 rounded-lg border border-slate-250 dark:border-slate-800/80 shadow-sm flex justify-between items-center font-mono text-xs">
+                        <div key={i} className="bg-white dark:bg-[#121824] p-3 rounded-lg border border-slate-200 dark:border-slate-800/80 shadow-sm flex justify-between items-center font-mono text-xs">
                           <span className="text-blue-600 dark:text-blue-400 font-bold">{pin.name}</span>
                           <span className="text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#0a0f18] px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800/50 font-bold">GPIO {pin.gpio}</span>
                         </div>
                       ))}
                       {pinData.length === 0 && (
-                        <div className="col-span-full text-xs text-slate-450 dark:text-slate-500 italic py-6 text-center select-none bg-white dark:bg-[#121824] border border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
+                        <div className="col-span-full text-xs text-slate-400 dark:text-slate-500 italic py-6 text-center select-none bg-white dark:bg-[#121824] border border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
                           No pins configured. Add name and GPIO on the Pin Register sidebar.
                         </div>
                       )}
@@ -1211,13 +1211,13 @@ export default function FuncBuild() {
 
                 {viewModalTab === 'cmds' && (
                   <div className="space-y-3">
-                    <div className="text-[10px] text-slate-450 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 select-none">
+                    <div className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 select-none">
                       Command Type Definitions ({cmdData.length} total)
                     </div>
                     {cmdData.map((cmd) => (
-                      <div key={cmd.Cmd} className="bg-white dark:bg-[#121824] p-3 rounded-lg border border-slate-250 dark:border-slate-800/80 shadow-sm flex flex-col gap-2">
+                      <div key={cmd.Cmd} className="bg-white dark:bg-[#121824] p-3 rounded-lg border border-slate-200 dark:border-slate-800/80 shadow-sm flex flex-col gap-2">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-xs font-mono text-slate-850 dark:text-slate-200">
+                          <span className="font-bold text-xs font-mono text-slate-800 dark:text-slate-200">
                             <span className="text-slate-400 dark:text-slate-500 mr-2 font-sans">#{cmd.index}</span>
                             {cmd.Cmd}
                           </span>
@@ -1244,7 +1244,7 @@ export default function FuncBuild() {
                 )}
 
                 {viewModalTab === 'raw' && (
-                  <pre className="w-full bg-[#0a0f18] text-slate-350 p-3 rounded-lg border border-slate-800 text-[0.625rem] font-mono whitespace-pre overflow-x-auto shadow-inner leading-relaxed select-all">
+                  <pre className="w-full bg-[#0a0f18] text-slate-300 p-3 rounded-lg border border-slate-800 text-[0.625rem] font-mono whitespace-pre overflow-x-auto shadow-inner leading-relaxed select-all">
                     {exportJSON}
                   </pre>
                 )}
@@ -1253,7 +1253,7 @@ export default function FuncBuild() {
               <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-between items-center shrink-0">
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-650 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Close
                 </button>

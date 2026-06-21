@@ -89,13 +89,13 @@ export default function GlobalHeader() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#0f172a] border-b-2 border-emerald-500 sticky top-0 z-50 shadow-md transition-colors duration-200 shrink-0">
+    <div className="bg-white dark:bg-[#080c14] border-b-2 border-emerald-500 sticky top-0 z-50 shadow-md transition-colors duration-200 shrink-0">
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-2 flex-1">
           {view !== 'hub' && (
             <button 
               onClick={handleBack}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-655 dark:text-slate-300 transition-colors cursor-pointer"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
               title={view === 'process' ? "Back to Project Builder" : "Back to Hub"}
             >
               <ArrowLeft size={18} />
@@ -110,7 +110,7 @@ export default function GlobalHeader() {
         {/* Theme Toggle */}
         <button 
           onClick={toggleTheme} 
-          className="p-1 mr-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-655 dark:text-slate-300 transition-colors cursor-pointer"
+          className="p-1 mr-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
           title="Toggle Light/Dark Mode"
         >
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -120,16 +120,16 @@ export default function GlobalHeader() {
         <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 p-0.5 mr-4 transition-colors">
           <button 
             onClick={() => setFontSize(prev => Math.max(0.8, prev - 0.1))} 
-            className="px-1.5 py-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-655 dark:text-slate-300 cursor-pointer"
+            className="px-1.5 py-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
           >
             A-
           </button>
-          <span className="px-1.5 text-[10px] text-slate-655 dark:text-slate-400 font-mono select-none">
+          <span className="px-1.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono select-none">
             {Math.round(fontSize * 100)}%
           </span>
           <button 
             onClick={() => setFontSize(prev => Math.min(1.5, prev + 0.1))} 
-            className="px-1.5 py-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-655 dark:text-slate-300 cursor-pointer"
+            className="px-1.5 py-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
           >
             A+
           </button>

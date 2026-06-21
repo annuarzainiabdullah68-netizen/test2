@@ -240,11 +240,11 @@ export default function ProjBuild() {
     const sortedProjects = [...projects].sort((a, b) => b.lastEdit.localeCompare(a.lastEdit));
 
     return (
-      <div className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-[#0a0f18] p-6 transition-colors duration-200">
+      <div className="flex-1 flex items-start justify-center bg-slate-50 dark:bg-[#0a0f18] p-6 pt-16 transition-colors duration-200">
         <div className="w-full max-w-4xl bg-white dark:bg-[#121824] rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col h-[520px] animate-in fade-in slide-in-from-bottom-2 duration-200">
           
           {/* Header Bar */}
-          <div className="border-b border-slate-200 dark:border-slate-800/80 px-6 py-5 flex items-center justify-between shrink-0 select-none bg-slate-50/50 dark:bg-[#161f30]/30">
+          <div className="border-b border-slate-200 dark:border-slate-800/80 px-6 py-5 flex items-center justify-between shrink-0 select-none bg-slate-50/50 dark:bg-[#080d16]">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-500/10 text-amber-500 dark:text-amber-400 rounded-lg">
                 <Cpu size={20} />
@@ -268,7 +268,7 @@ export default function ProjBuild() {
             <div className="flex-1 border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden flex flex-col bg-slate-50/50 dark:bg-[#0a0f18]/30 min-h-0 shadow-sm">
               
               {/* Table Headers */}
-              <div className="flex bg-slate-100 dark:bg-slate-850/60 border-b border-slate-200 dark:border-slate-800/60 py-3 px-5 font-bold text-[0.625rem] text-[#d97706] dark:text-amber-500 uppercase tracking-wider select-none">
+              <div className="flex bg-slate-100 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800/60 py-3 px-5 font-bold text-[0.625rem] text-[#d97706] dark:text-amber-500 uppercase tracking-wider select-none">
                 <div className="w-[30%] text-left">Project Name</div>
                 <div className="w-[45%] px-2 text-left">Remark</div>
                 <div className="w-[20%] text-right">Last Edit</div>
@@ -402,11 +402,11 @@ export default function ProjBuild() {
                 </div>
               </div>
 
-              <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#0c121e] flex justify-end gap-2 shrink-0">
+              <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070b11] flex justify-end gap-2 shrink-0">
                 <button 
                   type="button"
                   onClick={() => { setShowCreateModal(false); setNewProjName(""); setNewProjRemark(""); }} 
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -429,13 +429,13 @@ export default function ProjBuild() {
               onSubmit={handleEditProjectSubmit}
               className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
             >
-              <div className="py-4 px-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#0c121e]">
-                <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100">Edit Project Details</h2>
+              <div className="py-4 px-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070b11]">
+                <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Edit Project Details</h2>
               </div>
               
               <div className="p-5 space-y-4 text-left">
                 <div>
-                  <label className="block text-[0.625rem] font-extrabold text-slate-400 dark:text-slate-505 mb-1.5 uppercase tracking-widest text-left">
+                  <label className="block text-[0.625rem] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-widest text-left">
                     Project Name (Max 12 characters)
                   </label>
                   <input 
@@ -455,7 +455,7 @@ export default function ProjBuild() {
                 </div>
 
                 <div>
-                  <label className="block text-[0.625rem] font-extrabold text-slate-400 dark:text-slate-505 mb-1.5 uppercase tracking-widest text-left">
+                  <label className="block text-[0.625rem] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-widest text-left">
                     Remark / Description
                   </label>
                   <textarea 
@@ -468,11 +468,11 @@ export default function ProjBuild() {
                 </div>
               </div>
 
-              <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#0c121e] flex justify-end gap-2 shrink-0">
+              <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070b11] flex justify-end gap-2 shrink-0">
                 <button 
                   type="button"
                   onClick={() => setEditProjectData({ isOpen: false, projId: '', name: '', remark: '' })} 
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-655 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -810,9 +810,9 @@ export default function ProjBuild() {
     >
       {/* Zoom / Pan Controls */}
       <div className="absolute top-3 left-3 z-20 flex gap-2">
-        <button onClick={() => setScale(s => Math.min(s + 0.15, 2.5))} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><ZoomIn size={14} /></button>
-        <button onClick={() => setScale(s => Math.max(s - 0.15, 0.3))} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-655 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><ZoomOut size={14} /></button>
-        <button onClick={() => { setScale(1); setPan({x:0, y:0}); }} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-655 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><Maximize size={14} /></button>
+        <button onClick={() => setScale(s => Math.min(s + 0.15, 2.5))} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><ZoomIn size={14} /></button>
+        <button onClick={() => setScale(s => Math.max(s - 0.15, 0.3))} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><ZoomOut size={14} /></button>
+        <button onClick={() => { setScale(1); setPan({x:0, y:0}); }} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><Maximize size={14} /></button>
       </div>
 
       {/* Compile Button */}
@@ -954,7 +954,7 @@ export default function ProjBuild() {
                 </svg>
 
                 {/* Node Label Text */}
-                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-[#161b24] border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded shadow-md text-slate-850 dark:text-white font-bold text-[9px] whitespace-nowrap pointer-events-none uppercase tracking-wide ${isDragged ? 'opacity-70' : ''}`}>
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-[#161b24] border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded shadow-md text-slate-800 dark:text-white font-bold text-[9px] whitespace-nowrap pointer-events-none uppercase tracking-wide ${isDragged ? 'opacity-70' : ''}`}>
                   {node.name}
                 </div>
 
@@ -1006,7 +1006,7 @@ export default function ProjBuild() {
                         </div>
                       ))}
                       {node.rows.length === 0 && (
-                        <div className="h-6 flex items-center justify-center text-slate-400 dark:text-slate-505 text-[0.5625rem] italic pointer-events-none rounded-md border border-dashed border-slate-250 dark:border-slate-800">
+                        <div className="h-6 flex items-center justify-center text-slate-400 dark:text-slate-500 text-[0.5625rem] italic pointer-events-none rounded-md border border-dashed border-slate-200 dark:border-slate-800">
                           Drop rows here
                         </div>
                       )}
@@ -1019,14 +1019,12 @@ export default function ProjBuild() {
         })}
       </div>
 
-      {/* --- MODAL WORKFLOWS --- */}
-
-      {/* 1. Prompt Modal (Add Tab / Section / Row) */}
+      {/* --- MODAL WORKFLOWS --- */}      {/* 1. Prompt Modal (Add Tab / Section / Row) */}
       {promptModal.isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121824] border border-slate-250 dark:border-slate-800 rounded-xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30">
-              <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100">{promptModal.title}</h2>
+          <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#070b11]">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">{promptModal.title}</h2>
             </div>
 
             <div className="p-4 space-y-3">
@@ -1039,7 +1037,7 @@ export default function ProjBuild() {
                     if (e.target.value.length <= 12) setNewItemName(e.target.value);
                   }}
                   placeholder={`Enter ${promptModal.type} label...`}
-                  className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
+                  className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                   autoFocus
                 />
               </div>
@@ -1050,7 +1048,7 @@ export default function ProjBuild() {
                   <select 
                     value={executionMode}
                     onChange={(e) => setExecutionMode(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
+                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                   >
                     <option value="0">0 = Immediately</option>
                     <option value="5000">5000 = 5 seconds</option>
@@ -1064,17 +1062,17 @@ export default function ProjBuild() {
                       value={manualReqNumber}
                       onChange={(e) => setManualReqNumber(e.target.value)}
                       placeholder="Enter specific request offset (e.g. 15)"
-                      className="w-full mt-2 bg-slate-50 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none shadow-sm"
+                      className="w-full mt-2 bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none shadow-sm"
                     />
                   )}
                 </div>
               )}
             </div>
 
-            <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-end gap-2 shrink-0">
+            <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#070b11] flex justify-end gap-2 shrink-0">
               <button 
                 onClick={() => { setPromptModal({ isOpen: false, type: '', title: '', targetParent: null }); setNewItemName(''); setManualReqNumber(''); }} 
-                className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-650 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -1119,9 +1117,9 @@ export default function ProjBuild() {
         
         return (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#121824] border border-slate-250 dark:border-slate-800 rounded-xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-              <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30">
-                <h2 className="text-sm font-bold text-slate-855 dark:text-slate-100">Edit {typeLabel}</h2>
+            <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#070b11]">
+                <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Edit {typeLabel}</h2>
               </div>
 
               <div className="p-4 space-y-3">
@@ -1133,7 +1131,7 @@ export default function ProjBuild() {
                     onChange={(e) => {
                       if (e.target.value.length <= 12) setEditNodeModal(prev => ({...prev, name: e.target.value}));
                     }}
-                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
+                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                     autoFocus
                   />
                 </div>
@@ -1144,7 +1142,7 @@ export default function ProjBuild() {
                     <select 
                       value={editNodeModal.exec}
                       onChange={(e) => setEditNodeModal(prev => ({...prev, exec: e.target.value}))}
-                      className="w-full bg-slate-55 dark:bg-[#0a0f18] border border-slate-350 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
+                      className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                     >
                       <option value="0">0 = Immediately</option>
                       <option value="5000">5000 = 5 seconds</option>
@@ -1158,7 +1156,7 @@ export default function ProjBuild() {
                         value={editNodeModal.manualReq}
                         onChange={(e) => setEditNodeModal(prev => ({...prev, manualReq: e.target.value}))}
                         placeholder="Enter manual request offset"
-                        className="w-full mt-2 bg-slate-55 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-855 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none shadow-sm"
+                        className="w-full mt-2 bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none shadow-sm"
                       />
                     )}
                   </div>
@@ -1182,7 +1180,7 @@ export default function ProjBuild() {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setEditNodeModal({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' })} 
-                    className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-650 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                    className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1204,8 +1202,8 @@ export default function ProjBuild() {
       {showGroupModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-3xl shadow-2xl flex flex-col overflow-hidden max-h-[80vh] animate-in fade-in duration-150">
-            <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30">
-              <h2 className="text-sm font-bold text-slate-855 dark:text-slate-100">Edit Row Group</h2>
+            <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#070b11]">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Edit Row Group</h2>
             </div>
 
             <div className="p-4 space-y-1.5 overflow-y-auto flex-1">
@@ -1224,29 +1222,28 @@ export default function ProjBuild() {
                   </div>
                   
                   <span className="text-slate-400 text-[10px] w-4 text-right font-mono select-none">{index + 1}.</span>
-                  
                   <input 
                     type="text" 
                     value={row.label} 
                     onChange={(e) => updateRow(index, 'label', e.target.value)}
-                    className="w-1/4 bg-white dark:bg-[#0a0f18] border border-slate-355 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm" 
+                    className="w-1/4 bg-white dark:bg-[#0a0f18] border border-slate-300 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm" 
                     placeholder="Row label" 
                   />
                   <input 
                     type="text" 
                     value={row.command} 
                     onChange={(e) => updateRow(index, 'command', e.target.value)}
-                    className="flex-1 bg-white dark:bg-[#0a0f18] border border-slate-355 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-mono shadow-sm" 
+                    className="flex-1 bg-white dark:bg-[#0a0f18] border border-slate-300 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-mono shadow-sm" 
                     placeholder="Instruction mapping (e.g. PT0[LED_P8, 1000])"
                   />
                   
-                  <button onClick={() => removeRow(index)} className="text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-850 p-2 rounded-lg transition-colors cursor-pointer" title="Delete Row">
+                  <button onClick={() => removeRow(index)} className="text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors cursor-pointer" title="Delete Row">
                     <Trash2 size={15} />
                   </button>
                 </div>
               ))}
               {modalRows.length === 0 && (
-                <div className="text-xs text-slate-400 dark:text-slate-500 italic py-6 text-center border border-dashed border-slate-200 dark:border-slate-855 rounded-xl">
+                <div className="text-xs text-slate-400 dark:text-slate-500 italic py-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
                   No execution logic blocks added. Click {"\"Add Row\""} to build code segments.
                 </div>
               )}
@@ -1257,20 +1254,18 @@ export default function ProjBuild() {
                 <Plus size={15} /> Add Row
               </button>
               <div className="flex gap-2">
-                <button onClick={() => setShowGroupModal(false)} className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-655 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer">Cancel</button>
+                <button onClick={() => setShowGroupModal(false)} className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer">Cancel</button>
                 <button onClick={handleSaveGroupModal} className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-md cursor-pointer">Save Group</button>
               </div>
             </div>
           </div>
         </div>
-      )}
-
-      {/* 4. Edit Row Modal (Double click individual row) */}
+      )}      {/* 4. Edit Row Modal (Double click individual row) */}
       {showEditRowModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121824] border border-slate-250 dark:border-slate-850 rounded-xl w-full max-w-4xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh] animate-in fade-in duration-150">
-            <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-805 bg-slate-50 dark:bg-[#0a0f18]/30 shrink-0">
-              <h2 className="text-sm font-bold text-slate-855 dark:text-slate-100">Deep Property Inspection</h2>
+          <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-4xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh] animate-in fade-in duration-150">
+            <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#070b11] shrink-0">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Deep Property Inspection</h2>
             </div>
             
             <div className="p-4 flex flex-col gap-4 flex-1 overflow-y-auto min-h-0">
@@ -1282,7 +1277,7 @@ export default function ProjBuild() {
                     type="text" 
                     value={editRowData.label} 
                     onChange={e => setEditRowData({...editRowData, label: e.target.value})}
-                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm" 
+                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm" 
                   />
                 </div>
                 <div>
@@ -1300,7 +1295,7 @@ export default function ProjBuild() {
                       });
                       setSelectedStatRow('args');
                     }}
-                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
+                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                   >
                     {registry.map(c => <option key={c.Cmd} value={c.Cmd}>{c.Cmd}</option>)}
                   </select>
@@ -1311,14 +1306,14 @@ export default function ProjBuild() {
                 
                 {/* Left panel inside modal */}
                 <div className="flex flex-col gap-3 min-h-0">
-                  <div className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 shrink-0 shadow-inner">
+                  <div className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 shrink-0 shadow-inner">
                     <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider select-none">Constructed instruction</label>
                     <div className="w-full bg-white dark:bg-[#121824] border border-slate-300 dark:border-slate-800 text-emerald-600 dark:text-emerald-400 rounded-lg p-2 text-xs font-mono font-bold select-all tracking-tight shadow-sm">
                       {editRowData.command}[{editRowData.args.slice(0, currentX).join(', ')}]
                     </div>
                   </div>
 
-                  <div className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex-1 flex flex-col min-h-0 shadow-inner">
+                  <div className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex-1 flex flex-col min-h-0 shadow-inner">
                     <div className="flex flex-col min-h-0 flex-1">
                       <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none shrink-0">Available Peripheral Pin Macros</label>
                       <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-24 content-start pr-1">
@@ -1376,9 +1371,9 @@ export default function ProjBuild() {
 
                 {/* Right panel inside modal */}
                 <div className="flex flex-col min-h-0">
-                  <div className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex flex-col flex-1 min-h-0 shadow-inner">
+                  <div className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex flex-col flex-1 min-h-0 shadow-inner">
                     <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider select-none shrink-0">Prototype Documentation Description</label>
-                    <div className="flex-1 w-full bg-white dark:bg-[#121824] border border-slate-300 dark:border-slate-800 text-slate-750 dark:text-slate-300 rounded-lg p-3 text-[11px] font-medium overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-sm">
+                    <div className="flex-1 w-full bg-white dark:bg-[#121824] border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-lg p-3 text-[11px] font-medium overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-sm">
                       {registry.find(r => r.Cmd === editRowData.command)?.desc || "No documentation metadata configured for this command prototype."}
                     </div>
                   </div>
@@ -1389,7 +1384,7 @@ export default function ProjBuild() {
               {/* Dynamic Arguments fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0 items-start border-t border-slate-200 dark:border-slate-800/80 pt-3">
                 <div
-                  className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex flex-col justify-start gap-1.5 w-full shadow-inner select-none font-semibold text-xs"
+                  className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex flex-col justify-start gap-1.5 w-full shadow-inner select-none font-semibold text-xs"
                   style={{ height: '18.5rem' }}
                 >
                   {(
@@ -1409,7 +1404,7 @@ export default function ProjBuild() {
                             : 'bg-white dark:bg-[#121824] border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                         }`}
                       >
-                        <span className={`transition-colors ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-655 dark:text-slate-400'}`}>{label}</span>
+                        <span className={`transition-colors ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{label}</span>
                         <div className={`w-12 border text-center rounded-md py-0.5 text-[10px] font-mono font-bold shadow-sm transition-colors ${
                           isActive
                             ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
@@ -1421,7 +1416,7 @@ export default function ProjBuild() {
                 </div>
 
                 <div
-                  className="bg-slate-55 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 w-full shadow-inner overflow-y-auto"
+                  className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 w-full shadow-inner overflow-y-auto"
                   style={{ height: '18.5rem' }}
                 >
                   <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none">{currentHeaderLabel}</label>
@@ -1473,7 +1468,7 @@ export default function ProjBuild() {
 
                         return (
                           <div key={i} className="flex items-center gap-2 bg-white dark:bg-[#121824] p-1 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
-                            <span className="text-slate-400 dark:text-slate-555 text-[10px] w-24 truncate font-mono select-none" title={varName}>{varName}</span>
+                            <span className="text-slate-400 dark:text-slate-500 text-[10px] w-24 truncate font-mono select-none" title={varName}>{varName}</span>
                             <span className="text-orange-550 dark:text-orange-400 text-[9px] w-12 font-mono font-bold select-none truncate" title={varType}>{varType}</span>
                             <input 
                               type="text" 
@@ -1483,14 +1478,14 @@ export default function ProjBuild() {
                                 newArgs[actualIdx] = e.target.value;
                                 setEditRowData({...editRowData, args: newArgs});
                               }}
-                              className="flex-1 bg-slate-50 dark:bg-[#0a0f18] border border-slate-355 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-md p-1 text-xs focus:border-blue-500 outline-none font-mono" 
+                              className="flex-1 bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-md p-1 text-xs focus:border-blue-500 outline-none font-mono" 
                             />
                           </div>
                         );
                       });
                     })()}
                     {currentCount === 0 && (
-                      <div className="text-[10px] text-slate-400 dark:text-slate-505 italic py-2 select-none text-center">
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 italic py-2 select-none text-center">
                         No variables configured for this category.
                       </div>
                     )}
@@ -1510,7 +1505,7 @@ export default function ProjBuild() {
               </button>
               
               <div className="flex gap-2">
-                <button onClick={() => setShowEditRowModal(false)} className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-655 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer font-medium">Cancel</button>
+                <button onClick={() => setShowEditRowModal(false)} className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer font-medium">Cancel</button>
                 <button onClick={saveEditRow} className="px-4 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-bold transition-all shadow-md cursor-pointer">Save Row</button>
               </div>
             </div>

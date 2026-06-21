@@ -248,7 +248,7 @@ export default function ProcessView() {
                             </div>
                             
                             {!isSecCollapsed && (
-                              <div className="pl-3 border-l border-slate-100 dark:border-slate-850 ml-1.5 space-y-0.5">
+                              <div className="pl-3 border-l border-slate-100 dark:border-slate-800 ml-1.5 space-y-0.5">
                                 {sec.rows && sec.rows.map((row, idx) => (
                                   <div 
                                     key={row.id} 
@@ -256,8 +256,8 @@ export default function ProcessView() {
                                     onDoubleClick={() => handleRowDoubleClick(row)}
                                     className={`pl-2 py-1.5 cursor-pointer flex items-center gap-2 rounded-lg transition-all ${
                                       activeRow?.id === row.id 
-                                        ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-slate-850 dark:text-slate-100 font-bold' 
-                                        : 'hover:bg-slate-50 dark:hover:bg-slate-855 border border-transparent text-slate-500 dark:text-slate-400'
+                                        ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-slate-800 dark:text-slate-100 font-bold' 
+                                        : 'hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent text-slate-500 dark:text-slate-400'
                                     }`}
                                   >
                                     <span className="text-slate-350 dark:text-slate-600 w-4 font-mono text-right shrink-0 select-none text-[10px]">{idx + 1}</span>
@@ -293,7 +293,7 @@ export default function ProcessView() {
             
             <div 
               ref={cmdContainerRef}
-              className="p-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/40 font-mono text-[10px] text-slate-655 dark:text-slate-400 space-y-1 transition-colors shrink-0 max-h-36 overflow-y-auto"
+              className="p-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/40 font-mono text-[10px] text-slate-600 dark:text-slate-400 space-y-1 transition-colors shrink-0 max-h-36 overflow-y-auto"
             >
               {registry.map(c => {
                 const isActive = activeRow?.command.startsWith(c.Cmd);
@@ -346,7 +346,7 @@ export default function ProcessView() {
           <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 border-b border-slate-200 dark:border-slate-800 transition-colors shrink-0 select-none">
             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hex payload preview generator</span>
           </div>
-          <div className="p-3 overflow-y-auto font-mono text-[10px] text-slate-655 dark:text-slate-400 bg-slate-50 dark:bg-[#0a0f18]/30 flex-1 transition-colors shadow-inner flex flex-col min-h-0 select-text">
+          <div className="p-3 overflow-y-auto font-mono text-[10px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0a0f18]/30 flex-1 transition-colors shadow-inner flex flex-col min-h-0 select-text">
              <div className="flex gap-2 mb-2 text-blue-600 dark:text-blue-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 text-[9px] tracking-wider select-none">
                 <div className="w-14">OFFSET</div>
                 <div className="flex-1 flex justify-between">0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F</div>
