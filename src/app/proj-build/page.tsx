@@ -893,7 +893,7 @@ export default function ProjBuild() {
                   strokeDasharray="5 5"
                 />
               </svg>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-transparent border border-dashed border-slate-300 dark:border-slate-700 px-2 py-0.5 rounded text-slate-450 dark:text-slate-500 font-bold text-[9px] uppercase tracking-wide whitespace-nowrap">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-transparent border border-dashed border-slate-300 dark:border-slate-700 px-2 py-0.5 rounded text-slate-450 dark:text-slate-500 font-bold text-[0.5625rem] uppercase tracking-wide whitespace-nowrap">
                 {nodes[draggingNodeId].name}
               </div>
             </div>
@@ -919,7 +919,7 @@ export default function ProjBuild() {
             >
               <div className="relative group flex flex-col items-center w-full h-full">
                 {node.type === 'section' && (
-                  <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold mb-1 uppercase tracking-wider absolute -top-5 whitespace-nowrap">EXEC: {node.exec}</span>
+                  <span className="text-[0.5625rem] text-slate-500 dark:text-slate-400 font-bold mb-1 uppercase tracking-wider absolute -top-5 whitespace-nowrap">EXEC: {node.exec}</span>
                 )}
                 
                 {/* Hexagonal Node Design */}
@@ -948,7 +948,7 @@ export default function ProjBuild() {
                 </svg>
 
                 {/* Node Label Text */}
-                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-[#161b24] border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded shadow-md text-slate-800 dark:text-white font-bold text-[9px] whitespace-nowrap pointer-events-none uppercase tracking-wide ${isDragged ? 'opacity-70' : ''}`}>
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-[#161b24] border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded shadow-md text-slate-800 dark:text-white font-bold text-[0.5625rem] whitespace-nowrap pointer-events-none uppercase tracking-wide ${isDragged ? 'opacity-70' : ''}`}>
                   {node.name}
                 </div>
 
@@ -1023,7 +1023,7 @@ export default function ProjBuild() {
 
             <div className="p-4 space-y-3">
               <div>
-                <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Name (Max 12 chars)</label>
+                <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Name (Max 12 chars)</label>
                 <input 
                   type="text" 
                   value={newItemName}
@@ -1038,7 +1038,7 @@ export default function ProjBuild() {
               
               {promptModal.type === 'section' && (
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Execution Mode</label>
+                  <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Execution Mode</label>
                   <select 
                     value={executionMode}
                     onChange={(e) => setExecutionMode(e.target.value)}
@@ -1118,7 +1118,7 @@ export default function ProjBuild() {
 
               <div className="p-4 space-y-3">
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Name (Max 12 chars)</label>
+                  <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Name (Max 12 chars)</label>
                   <input 
                     type="text" 
                     value={editNodeModal.name}
@@ -1132,7 +1132,7 @@ export default function ProjBuild() {
                 
                 {nodeType === 'section' && (
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Execution Mode</label>
+                    <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Execution Mode</label>
                     <select 
                       value={editNodeModal.exec}
                       onChange={(e) => setEditNodeModal(prev => ({...prev, exec: e.target.value}))}
@@ -1215,7 +1215,7 @@ export default function ProjBuild() {
                     <GripVertical size={14} />
                   </div>
                   
-                  <span className="text-slate-400 text-[10px] w-4 text-right font-mono select-none">{index + 1}.</span>
+                  <span className="text-slate-400 text-[0.625rem] w-4 text-right font-mono select-none">{index + 1}.</span>
                   <input 
                     type="text" 
                     value={row.label} 
@@ -1266,7 +1266,7 @@ export default function ProjBuild() {
               
               <div className="grid grid-cols-2 gap-4 shrink-0">
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Row Label</label>
+                  <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Row Label</label>
                   <input 
                     type="text" 
                     value={editRowData.label} 
@@ -1275,7 +1275,7 @@ export default function ProjBuild() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Target Command Prototype</label>
+                  <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Target Command Prototype</label>
                   <select 
                     value={editRowData.command}
                     onChange={e => {
@@ -1301,7 +1301,7 @@ export default function ProjBuild() {
                 {/* Left panel inside modal */}
                 <div className="flex flex-col gap-3 min-h-0">
                   <div className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 shrink-0 shadow-inner">
-                    <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider select-none">Constructed instruction</label>
+                    <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider select-none">Constructed instruction</label>
                     <div className="w-full bg-white dark:bg-[#121824] border border-slate-300 dark:border-slate-800 text-emerald-600 dark:text-emerald-400 rounded-lg p-2 text-xs font-mono font-bold select-all tracking-tight shadow-sm">
                       {editRowData.command}[{editRowData.args.slice(0, currentX).join(', ')}]
                     </div>
@@ -1309,7 +1309,7 @@ export default function ProjBuild() {
 
                   <div className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex-1 flex flex-col min-h-0 shadow-inner">
                     <div className="flex flex-col min-h-0 flex-1">
-                      <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none shrink-0">Available Peripheral Pin Macros</label>
+                      <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none shrink-0">Available Peripheral Pin Macros</label>
                       <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-24 content-start pr-1">
                         {pinMacros.map(pin => (
                           <button 
@@ -1319,7 +1319,7 @@ export default function ProjBuild() {
                               if (newArgs.length > 0) newArgs[0] = pin; 
                               setEditRowData({...editRowData, args: newArgs});
                             }}
-                            className="bg-white dark:bg-[#1a2434] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[9px] font-mono px-2 py-1 rounded-md border border-slate-300 dark:border-slate-800 transition-colors shadow-sm cursor-pointer"
+                            className="bg-white dark:bg-[#1a2434] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[0.5625rem] font-mono px-2 py-1 rounded-md border border-slate-300 dark:border-slate-800 transition-colors shadow-sm cursor-pointer"
                           >
                             {pin}
                           </button>
@@ -1327,7 +1327,7 @@ export default function ProjBuild() {
                       </div>
                     </div>
                     <div className="shrink-0 pt-2 mt-2 border-t border-slate-200 dark:border-slate-800/60 flex flex-col">
-                      <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none shrink-0">Row Group Labels Context</label>
+                      <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none shrink-0">Row Group Labels Context</label>
                       <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-16 pr-1">
                         {(() => {
                           const existingLabels = new Set<string>();
@@ -1342,7 +1342,7 @@ export default function ProjBuild() {
                           });
                           const labelsArray = Array.from(existingLabels);
                           if (labelsArray.length === 0) {
-                            return <span className="text-[9px] text-slate-400 italic select-none">No labels defined in the workflow rows yet.</span>;
+                            return <span className="text-[0.5625rem] text-slate-400 italic select-none">No labels defined in the workflow rows yet.</span>;
                           }
                           return labelsArray.map(lbl => (
                             <button 
@@ -1352,7 +1352,7 @@ export default function ProjBuild() {
                                 if (newArgs.length > 1) newArgs[1] = lbl;
                                 setEditRowData({...editRowData, args: newArgs});
                               }}
-                              className="bg-white dark:bg-[#1a2434] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[9px] font-mono px-2 py-1 rounded-md border border-slate-300 dark:border-slate-800 transition-colors shadow-sm cursor-pointer"
+                              className="bg-white dark:bg-[#1a2434] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[0.5625rem] font-mono px-2 py-1 rounded-md border border-slate-300 dark:border-slate-800 transition-colors shadow-sm cursor-pointer"
                             >
                               {lbl}
                             </button>
@@ -1366,8 +1366,8 @@ export default function ProjBuild() {
                 {/* Right panel inside modal */}
                 <div className="flex flex-col min-h-0">
                   <div className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 flex flex-col flex-1 min-h-0 shadow-inner">
-                    <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider select-none shrink-0">Prototype Documentation Description</label>
-                    <div className="flex-1 w-full bg-white dark:bg-[#121824] border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-lg p-3 text-[11px] font-medium overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-sm">
+                    <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider select-none shrink-0">Prototype Documentation Description</label>
+                    <div className="flex-1 w-full bg-white dark:bg-[#121824] border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-lg p-3 text-[0.6875rem] font-medium overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-sm">
                       {registry.find(r => r.Cmd === editRowData.command)?.desc || "No documentation metadata configured for this command prototype."}
                     </div>
                   </div>
@@ -1399,7 +1399,7 @@ export default function ProjBuild() {
                         }`}
                       >
                         <span className={`transition-colors ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{label}</span>
-                        <div className={`w-12 border text-center rounded-md py-0.5 text-[10px] font-mono font-bold shadow-sm transition-colors ${
+                        <div className={`w-12 border text-center rounded-md py-0.5 text-[0.625rem] font-mono font-bold shadow-sm transition-colors ${
                           isActive
                             ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
                             : 'bg-slate-50 dark:bg-[#0a0f18] border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200'
@@ -1413,7 +1413,7 @@ export default function ProjBuild() {
                   className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 w-full shadow-inner overflow-y-auto"
                   style={{ height: '18.5rem' }}
                 >
-                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none">{currentHeaderLabel}</label>
+                  <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none">{currentHeaderLabel}</label>
                   <div className="space-y-1">
                     {(() => {
                       const cmdDetailsObj = getCommandDetails(editRowData.command);
@@ -1450,10 +1450,10 @@ export default function ProjBuild() {
                           return (
                             <div key={i} className="flex items-center justify-between bg-white dark:bg-[#121824] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
                               <div className="flex items-center gap-2">
-                                <span className="text-slate-450 dark:text-slate-400 text-[10px] w-24 truncate font-mono select-none font-semibold" title={varName}>{varName}</span>
-                                <span className="text-orange-550 dark:text-orange-400 text-[9px] w-12 font-mono font-bold select-none truncate" title={varType}>{varType}</span>
+                                <span className="text-slate-450 dark:text-slate-400 text-[0.625rem] w-24 truncate font-mono select-none font-semibold" title={varName}>{varName}</span>
+                                <span className="text-orange-550 dark:text-orange-400 text-[0.5625rem] w-12 font-mono font-bold select-none truncate" title={varType}>{varType}</span>
                               </div>
-                              <span className="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-mono select-none">
+                              <span className="text-[0.5625rem] bg-slate-100 dark:bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-mono select-none">
                                 Read-Only
                               </span>
                             </div>
@@ -1462,8 +1462,8 @@ export default function ProjBuild() {
 
                         return (
                           <div key={i} className="flex items-center gap-2 bg-white dark:bg-[#121824] p-1 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
-                            <span className="text-slate-400 dark:text-slate-500 text-[10px] w-24 truncate font-mono select-none" title={varName}>{varName}</span>
-                            <span className="text-orange-550 dark:text-orange-400 text-[9px] w-12 font-mono font-bold select-none truncate" title={varType}>{varType}</span>
+                            <span className="text-slate-400 dark:text-slate-500 text-[0.625rem] w-24 truncate font-mono select-none" title={varName}>{varName}</span>
+                            <span className="text-orange-550 dark:text-orange-400 text-[0.5625rem] w-12 font-mono font-bold select-none truncate" title={varType}>{varType}</span>
                             <input 
                               type="text" 
                               value={val} 
@@ -1479,7 +1479,7 @@ export default function ProjBuild() {
                       });
                     })()}
                     {currentCount === 0 && (
-                      <div className="text-[10px] text-slate-400 dark:text-slate-500 italic py-2 select-none text-center">
+                      <div className="text-[0.625rem] text-slate-400 dark:text-slate-500 italic py-2 select-none text-center">
                         No variables configured for this category.
                       </div>
                     )}

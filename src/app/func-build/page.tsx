@@ -1190,7 +1190,7 @@ export default function FuncBuild() {
               <div className="p-4 flex-1 overflow-y-auto min-h-0 bg-slate-50/50 dark:bg-[#0d121c]/40">
                 {viewModalTab === 'pins' && (
                   <div className="space-y-3">
-                    <div className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 select-none">
+                    <div className="text-[0.625rem] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 select-none">
                       Parsed Pin Mappings ({pinData.length} total)
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1211,7 +1211,7 @@ export default function FuncBuild() {
 
                 {viewModalTab === 'cmds' && (
                   <div className="space-y-3">
-                    <div className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 select-none">
+                    <div className="text-[0.625rem] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 select-none">
                       Command Type Definitions ({cmdData.length} total)
                     </div>
                     {cmdData.map((cmd) => (
@@ -1228,13 +1228,13 @@ export default function FuncBuild() {
                           </div>
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-[#0a0f18]/60 p-2 rounded border border-slate-200 dark:border-slate-800/80 font-mono text-[11px] text-emerald-600 dark:text-emerald-400">
+                        <div className="bg-slate-50 dark:bg-[#0a0f18]/60 p-2 rounded border border-slate-200 dark:border-slate-800/80 font-mono text-[0.6875rem] text-emerald-600 dark:text-emerald-400">
                           <span className="text-slate-400 dark:text-slate-500 mr-2 select-none">Prototype:</span>
                           {cmd.Cmd}: {cmd.rets.length > 0 ? cmd.rets.map((r: any) => r.type).join(', ') + ' ' : ''}({cmd.args.map((a: any) => a.type).join(', ')}){cmd.ints.length > 0 ? ' {' + cmd.ints.map((i: any) => i.type).join(', ') + '}' : ''}
                         </div>
 
                         {cmd.desc && (
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 whitespace-pre-wrap leading-relaxed border-t border-slate-100 dark:border-slate-800/60 pt-2 mt-1">
+                          <div className="text-[0.6875rem] text-slate-500 dark:text-slate-400 whitespace-pre-wrap leading-relaxed border-t border-slate-100 dark:border-slate-800/60 pt-2 mt-1">
                             {cmd.desc}
                           </div>
                         )}

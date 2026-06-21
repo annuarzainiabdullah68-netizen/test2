@@ -120,16 +120,16 @@ export default function GlobalHeader() {
         <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 p-0.5 mr-4 transition-colors">
           <button 
             onClick={() => setFontSize(prev => Math.max(0.8, prev - 0.1))} 
-            className="px-1.5 py-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+            className="px-1.5 py-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[0.625rem] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
           >
             A-
           </button>
-          <span className="px-1.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono select-none">
+          <span className="px-1.5 text-[0.625rem] text-slate-600 dark:text-slate-400 font-mono select-none">
             {Math.round(fontSize * 100)}%
           </span>
           <button 
             onClick={() => setFontSize(prev => Math.min(1.5, prev + 0.1))} 
-            className="px-1.5 py-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+            className="px-1.5 py-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[0.625rem] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
           >
             A+
           </button>
@@ -168,7 +168,7 @@ export default function GlobalHeader() {
               setUsbConnected(false);
             }
           }}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors select-none ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.625rem] font-bold border transition-colors select-none ${
             usbConnected 
               ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-850 hover:bg-red-100 dark:hover:bg-red-955/30 hover:text-red-700 dark:hover:text-red-400 hover:border-red-300 cursor-pointer' 
               : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700 cursor-not-allowed'
