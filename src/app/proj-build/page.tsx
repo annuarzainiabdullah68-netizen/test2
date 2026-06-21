@@ -240,24 +240,9 @@ export default function ProjBuild() {
     const sortedProjects = [...projects].sort((a, b) => b.lastEdit.localeCompare(a.lastEdit));
 
     return (
-      <div className="flex-1 flex items-start justify-center bg-slate-50 dark:bg-[#0a0f18] p-6 pt-16 transition-colors duration-200">
-        <div className="w-full max-w-4xl bg-white dark:bg-[#121824] rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col h-[520px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <div className="flex flex-col p-4 max-w-5xl mx-auto w-full transition-colors duration-200">
+        <div className="w-full bg-white dark:bg-[#121824] rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col h-[520px] animate-in fade-in slide-in-from-bottom-2 duration-200">
           
-          {/* Header Bar */}
-          <div className="border-b border-slate-200 dark:border-slate-800/80 px-6 py-5 flex items-center justify-between shrink-0 select-none bg-slate-50/50 dark:bg-[#080d16]">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-500/10 text-amber-500 dark:text-amber-400 rounded-lg">
-                <Cpu size={20} />
-              </div>
-              <div className="text-left">
-                <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100 tracking-wide uppercase">
-                  Project Builder
-                </h2>
-                <p className="text-[0.625rem] text-slate-500 dark:text-slate-400 font-medium">Select an existing execution workspace or configure a new flow</p>
-              </div>
-            </div>
-          </div>
-
           {/* Main Card Area */}
           <div className="flex-1 bg-white dark:bg-[#121824] p-6 flex flex-col min-h-0 select-text">
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-3 uppercase tracking-widest select-none text-left">
