@@ -769,11 +769,11 @@ export default function ProcessView() {
              <div className="space-y-1 overflow-y-auto flex-1">
                 {displayedHexLines.map((line, idx) => (
                   <div key={idx} className="flex gap-2 hover:bg-slate-100 dark:hover:bg-slate-900/50 py-0.5 rounded-md px-1 transition-colors">
-                    <div className="w-14 text-slate-450 dark:text-slate-500 select-none">{line.offset}</div>
-                    <div className="flex-1 flex justify-between text-slate-800 dark:text-slate-350 tracking-wider">
+                    <div className="w-14 text-slate-400 dark:text-slate-400 select-none">{line.offset}</div>
+                    <div className="flex-1 flex justify-between text-slate-800 dark:text-slate-200 tracking-wider">
                       {line.bytes}
                     </div>
-                    <div className="w-16 text-right text-slate-450 dark:text-slate-500 tracking-wider">
+                    <div className="w-16 text-right text-slate-400 dark:text-slate-400 tracking-wider">
                       {line.ascii}
                     </div>
                   </div>
