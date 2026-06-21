@@ -1,19 +1,19 @@
-export interface PinDef { 
-  name: string; 
-  gpio: number; 
+export interface PinDef {
+  name: string;
+  gpio: number;
 }
 
-export interface ArgDef { 
-  type: string; 
-  name?: string; 
+export interface ArgDef {
+  type: string;
+  name?: string;
 }
 
-export interface CmdDef { 
-  index: number; 
-  Cmd: string; 
-  args: ArgDef[]; 
-  ints?: ArgDef[]; 
-  rets?: ArgDef[]; 
+export interface CmdDef {
+  index: number;
+  Cmd: string;
+  args: ArgDef[];
+  ints?: ArgDef[];
+  rets?: ArgDef[];
 }
 
 export interface CompiledResult {
@@ -27,7 +27,7 @@ export interface CompiledResult {
  */
 export const generateHexDump = (data: Uint8Array, startAddress: number): string => {
   if (!data || data.length === 0) return "No data to display.";
-  
+
   let hexDump = '';
   const BYTES_PER_LINE = 16;
   let currentAddress = startAddress;
@@ -35,10 +35,10 @@ export const generateHexDump = (data: Uint8Array, startAddress: number): string 
   for (let i = 0; i < data.length; i += BYTES_PER_LINE) {
     const chunk = data.slice(i, i + BYTES_PER_LINE);
     const addressStr = currentAddress.toString(16).padStart(8, '0').toUpperCase();
-    
+
     const hexParts = Array.from(chunk).map(byte => byte.toString(16).padStart(2, '0').toUpperCase());
     const hexString = hexParts.join(' ').padEnd(BYTES_PER_LINE * 3 - 1, ' ');
-    
+
     const asciiString = Array.from(chunk).map(byte => (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.').join('');
 
     hexDump += `${addressStr}  ${hexString}  |${asciiString}|\n`;
@@ -92,28 +92,28 @@ export class ByteBuffer {
     this.align(8); // 64-bit (8 bytes) memory alignment
   }
 
-  pushUInt8(val: number) { 
-    this.buffer.push(val & 0xFF); 
+  pushUInt8(val: number) {
+    this.buffer.push(val & 0xFF);
   }
-  
-  pushInt16(val: number) { 
+
+  pushInt16(val: number) {
     this.align(2);
-    this.buffer.push(val & 0xFF); 
-    this.buffer.push((val >> 8) & 0xFF); 
+    this.buffer.push(val & 0xFF);
+    this.buffer.push((val >> 8) & 0xFF);
   }
 
   pushUInt16(val: number) {
     this.align(2);
-    this.buffer.push(val & 0xFF); 
-    this.buffer.push((val >> 8) & 0xFF); 
+    this.buffer.push(val & 0xFF);
+    this.buffer.push((val >> 8) & 0xFF);
   }
-  
+
   pushUInt32(val: number) {
     this.align(4);
-    this.buffer.push(val & 0xFF); 
-    this.buffer.push((val >> 8) & 0xFF); 
-    this.buffer.push((val >> 16) & 0xFF); 
-    this.buffer.push((val >> 24) & 0xFF); 
+    this.buffer.push(val & 0xFF);
+    this.buffer.push((val >> 8) & 0xFF);
+    this.buffer.push((val >> 16) & 0xFF);
+    this.buffer.push((val >> 24) & 0xFF);
   }
 
   pushFloat(val: number) {
@@ -159,7 +159,7 @@ export class ByteBuffer {
 
   // Used for allocating state variables (rets, ints) to 0
   pushZeroedType(type: string) {
-    switch(type) {
+    switch (type) {
       case 'int8':
       case 'uint8': this.pushUInt8(0); break;
       case 'int16':
@@ -171,8 +171,8 @@ export class ByteBuffer {
       case 'float': this.pushFloat(0.0); break;
       case 'double': this.pushDouble(0.0); break;
       case 'char': this.pushChar('\0'); break;
-      case '*': 
-      case 'str': 
+      case '*':
+      case 'str':
         this.align(2);
         this.buffer.push(0);
         this.buffer.push(0);
@@ -195,17 +195,18 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
   const buf = new ByteBuffer(startAddr);
   const strBuf = new ByteBuffer(0); // myString array starts at relative address 0
   const byteMap: Record<string, { start: number; end: number }> = {};
-  // Maps row.label -> absolute address of that row's rets slot in myProg
+  // retAddressMap: row.label → absolute address of that row's rets slot
+  // Formula: startAddr + retsStart  (= row_base_addr + offset_to_rets)
   const retAddressMap: Record<string, number> = {};
 
   // --- Project Header ---
   buf.align(2);
   const projIdx = buf.buffer.length;
-  buf.pushUInt16(0x0000); 
+  buf.pushUInt16(0x0000);
 
   if (mainJson.tabs && Array.isArray(mainJson.tabs)) {
     mainJson.tabs.forEach((tab: any) => {
-      
+
       // --- Tab Header ---
       buf.align(2);
       const tabIdx = buf.buffer.length;
@@ -213,7 +214,7 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
 
       if (tab.sections && Array.isArray(tab.sections)) {
         tab.sections.forEach((sec: any) => {
-          
+
           // --- Section Header ---
           buf.align(2);
           const secIdx = buf.buffer.length;
@@ -227,8 +228,8 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
           } else if (typeof sec.exec === 'number') {
             execVal = sec.exec;
           }
-          buf.pushInt16(execVal); 
-          
+          buf.pushInt16(execVal);
+
           // Process Section spare for delay
           buf.pushInt16(0);
 
@@ -261,7 +262,8 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
                   }
                   const retsEnd = buf.buffer.length;
 
-                  // Register the absolute address of this row's rets so pointer args can resolve it
+                  // Register absolute rets address for pointer resolution:
+                  // ptr = startAddr + retsStart  (e.g. EERR:0x36 + ret_offset:3 = 0x39)
                   if (row.label && retsEnd > retsStart) {
                     retAddressMap[String(row.label).trim()] = startAddr + retsStart;
                   }
@@ -271,13 +273,13 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
                   const args = rawArgs.split(',').map((s: string) => s.trim());
                   def.args.forEach((argDef, i) => {
                     const valStr = args[i] || "";
-                    
+
                     // Pin Resolver
                     let resolvedVal: number | string = valStr;
                     const pinMatch = pinReg.find(p => valStr.includes(p.name));
                     if (pinMatch) resolvedVal = pinMatch.gpio;
-                    
-                    switch(argDef.type) {
+
+                    switch (argDef.type) {
                       case 'int8':
                       case 'uint8': buf.pushUInt8(Number(resolvedVal) || 0); break;
                       case 'int16':
@@ -285,24 +287,23 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
                       case 'int32':
                       case 'uint32': buf.pushUInt32(Number(resolvedVal) || 0); break;
                       case 'int64':
-                      case 'uint64': 
-                        try { buf.pushUInt64(BigInt(resolvedVal)); } 
-                        catch { buf.pushUInt64(BigInt(0)); } 
+                      case 'uint64':
+                        try { buf.pushUInt64(BigInt(resolvedVal)); }
+                        catch { buf.pushUInt64(BigInt(0)); }
                         break;
                       case 'float': buf.pushFloat(Number(resolvedVal) || 0.0); break;
                       case 'double': buf.pushDouble(Number(resolvedVal) || 0.0); break;
                       case 'char': buf.pushChar(String(resolvedVal)); break;
-                      case 'str': 
+                      case 'str':
                         buf.align(2);
                         buf.pushUInt16(strBuf.currentAddress); // Write Address of String to myProg
                         strBuf.pushString(String(resolvedVal)); // Store actual string in myString
                         break;
                       case '*': {
                         buf.align(2);
-                        // Resolve pointer: look up the label of the row whose rets slot is referenced
+                        // Resolve pointer: look up the rets address of the referenced row label
                         const ptrLabel = String(resolvedVal).trim();
-                        const ptrAddr = retAddressMap[ptrLabel] ?? 0;
-                        buf.pushUInt16(ptrAddr);
+                        buf.pushUInt16(retAddressMap[ptrLabel] ?? 0);
                         break;
                       }
                       default: buf.pushUInt8(Number(resolvedVal) || 0); break;
@@ -322,9 +323,9 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
                     const id = String(row.nodeId);
                     byteMap[`${id}::header`] = { start: rowIdx, end: headerEnd };
                     byteMap[`${id}::opcode`] = { start: opcodeStart, end: opcodeEnd };
-                    byteMap[`${id}::rets`]   = { start: retsStart,   end: retsEnd   };
-                    byteMap[`${id}::args`]   = { start: argsStart,   end: argsEnd   };
-                    byteMap[`${id}::ints`]   = { start: intsStart,   end: intsEnd   };
+                    byteMap[`${id}::rets`] = { start: retsStart, end: retsEnd };
+                    byteMap[`${id}::args`] = { start: argsStart, end: argsEnd };
+                    byteMap[`${id}::ints`] = { start: intsStart, end: intsEnd };
                   }
                 }
               }
