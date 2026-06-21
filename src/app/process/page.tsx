@@ -147,8 +147,6 @@ export default function ProcessView() {
               label: row.label || '',
               command: row.command,
               composeRowView: getComposedRowString(row),
-              address: '0x' + rowAddress.toString(16).toUpperCase().padStart(8, '0'),
-              addressDec: rowAddress,
               bytes: allBytesStr
             });
             
@@ -160,8 +158,6 @@ export default function ProcessView() {
           id: sec.id,
           name: sec.name,
           exec: sec.exec,
-          address: '0x' + secAddress.toString(16).toUpperCase().padStart(8, '0'),
-          addressDec: secAddress,
           rows: resultRows
         });
       }
@@ -169,8 +165,6 @@ export default function ProcessView() {
       resultTabs.push({
         id: tab.id,
         name: tab.name,
-        address: '0x' + tabAddress.toString(16).toUpperCase().padStart(8, '0'),
-        addressDec: tabAddress,
         sections: resultSections
       });
     }
