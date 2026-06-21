@@ -255,10 +255,10 @@ export default function ProjBuild() {
               
               {/* Table Headers */}
               <div className="flex bg-slate-100 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800/60 py-3 px-5 font-bold text-[0.625rem] text-[#d97706] dark:text-amber-500 uppercase tracking-wider select-none">
-                <div className="w-[30%] text-left">Project Name</div>
-                <div className="w-[45%] px-2 text-left">Remark</div>
-                <div className="w-[20%] text-right">Last Edit</div>
-                <div className="w-[5%]"></div>
+                <div className="w-[30%] text-left shrink-0">Project Name</div>
+                <div className="w-[45%] px-2 text-left shrink-0">Remark</div>
+                <div className="w-[20%] text-right shrink-0">Last Edit</div>
+                <div className="w-[5%] shrink-0"></div>
               </div>
 
               {/* Table Body (Limited to 7 items/lines, scrollbar if needed) */}
@@ -283,10 +283,10 @@ export default function ProjBuild() {
                     {/* Left hover indicator bar */}
                     <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-[#d97706] dark:bg-amber-500 rounded-r-md opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
 
-                    <div className="w-[30%] font-bold text-slate-800 dark:text-slate-100 truncate pr-2 uppercase tracking-wide text-left flex items-center gap-1.5">
+                    <div className="w-[30%] font-bold text-slate-800 dark:text-slate-100 truncate pr-2 uppercase tracking-wide text-left flex items-center gap-1.5 shrink-0">
                       {proj.name}
                     </div>
-                    <div className="w-[45%] px-2 text-slate-500 dark:text-slate-400 truncate text-left" title={proj.remark || ''}>
+                    <div className="w-[45%] px-2 text-slate-500 dark:text-slate-400 truncate text-left shrink-0" title={proj.remark || ''}>
                       {proj.remark
                         ? proj.remark.split('\n')[proj.remark.split('\n').length - 1].trim() || proj.remark.trim()
                         : <span className="italic opacity-30">No description provided</span>
