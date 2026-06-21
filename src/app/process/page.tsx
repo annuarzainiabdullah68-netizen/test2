@@ -53,6 +53,60 @@ export default function ProcessView() {
     }
   }, [startAddress]);
 
+  const getComposedRowString = (row: RowItem): string => {
+    const match = row.command.match(/^([A-Z0-9_]+)\[(.*)\]$/);
+    const cmdName = match ? match[1] : (row.command.split('[')[0] || 'CMD');
+    const argsStr = match ? match[2] : '';
+    const rowArgs = argsStr.split(',').map(s => s.trim());
+
+    const details = cmdDetails[cmdName.toUpperCase()] || registry.find(r => r.Cmd === cmdName.toUpperCase());
+    const prefix = row.label ? `${row.label} : ` : '';
+
+    if (!details) {
+      return `${prefix}${row.command}`;
+    }
+
+    const x = details.x ?? 0;
+    const y = details.y ?? 0;
+    const z = details.z ?? 0;
+
+    const retTypes = (details.rets || Array.from({ length: z }, (_, i) => ({ type: 'int8', name: `ret_${i}` }))) as any[];
+    let formattedRets = '';
+    if (z > 0) {
+      formattedRets = ' : ' + retTypes.map((r: any) => r.type).join(', ');
+    }
+
+    const argTypes = details.args || Array.from({ length: x }, (_, i) => ({ type: 'int8', name: `arg_${i}` }));
+    const formattedArgsParts = [];
+    for (let i = 0; i < x; i++) {
+      const type = argTypes[i]?.type || 'int8';
+      let val = rowArgs[i] !== undefined && rowArgs[i] !== '' ? rowArgs[i] : '';
+      if (val) {
+        if (type === 'str') {
+          if (!val.startsWith('"') || !val.endsWith('"')) {
+            val = `"${val}"`;
+          }
+        } else if (type === 'char') {
+          if (!val.startsWith("'") || !val.endsWith("'")) {
+            val = `'${val}'`;
+          }
+        }
+        formattedArgsParts.push(`${type} ${val}`);
+      } else {
+        formattedArgsParts.push(type);
+      }
+    }
+    const formattedArgs = formattedArgsParts.join(', ');
+
+    const intTypes = (details.ints || Array.from({ length: y }, (_, i) => ({ type: 'int8', name: `int_${i}` }))) as any[];
+    let formattedInts = '';
+    if (y > 0) {
+      formattedInts = ' {' + intTypes.map((r: any) => r.type).join(', ') + '}';
+    }
+
+    return `${prefix}${cmdName}${formattedRets} (${formattedArgs})${formattedInts}`;
+  };
+
   const handleTestClick = () => {
     const addr = window.prompt("Enter Start Address (e.g. 0x08000000 or 1000):", startAddress || "0x00");
     if (addr === null) return;
@@ -92,6 +146,7 @@ export default function ProcessView() {
               id: row.id,
               label: row.label || '',
               command: row.command,
+              composeRowView: getComposedRowString(row),
               address: '0x' + rowAddress.toString(16).toUpperCase().padStart(8, '0'),
               addressDec: rowAddress,
               bytes: allBytesStr
