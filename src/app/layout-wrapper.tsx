@@ -14,7 +14,7 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      document.documentElement.style.fontSize = `${fontSize * 16}px`;
+      document.documentElement.style.fontSize = `${fontSize * 20}px`;
     }
   }, [fontSize]);
 

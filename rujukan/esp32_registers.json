@@ -199,8 +199,8 @@
       "desc": "Wait for Interrupt",
       "args": [
         {
-          "type": "int8",
-          "name": "arg_0"
+          "type": "char",
+          "name": "separator"
         }
       ],
       "ints": [
@@ -289,16 +289,21 @@
     {
       "index": 7,
       "Cmd": "LSS",
-      "x": 0,
+      "x": 1,
       "y": 0,
-      "z": 1,
+      "z": 0,
       "desc": "Lateral String Storage <LSS>\n [R1]str:(lateral string). Label is optional if this row within row pool, especially if this row stack on top same cmd",
-      "args": [],
+      "args": [
+        {
+          "type": "str",
+          "name": "Store String"
+        }
+      ],
       "ints": [],
       "rets": [
         {
-          "type": "str",
-          "name": "storeString"
+          "type": "*",
+          "name": "ret_0"
         }
       ]
     }
