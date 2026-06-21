@@ -19,6 +19,7 @@ export interface CmdDef {
 export interface CompiledResult {
   prog: Uint8Array;
   str: Uint8Array;
+  byteMap: Record<string, { start: number; end: number }>;
 }
 
 /**
@@ -193,6 +194,7 @@ export class ByteBuffer {
 export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[], startAddr: number): CompiledResult => {
   const buf = new ByteBuffer(startAddr);
   const strBuf = new ByteBuffer(0); // myString array starts at relative address 0
+  const byteMap: Record<string, { start: number; end: number }> = {};
 
   // --- Project Header ---
   buf.align(2);
@@ -300,18 +302,27 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
               // Evaluate RLen and patch current Row Header
               const rowLen = buf.buffer.length - rowIdx;
               buf.patchUInt16(rowIdx, 0xC000 | (rowLen & 0x3FFF));
+
+              // Track row byte range
+              if (row.nodeId) byteMap[String(row.nodeId)] = { start: rowIdx, end: buf.buffer.length };
             });
           }
 
           // Evaluate RLen and patch current Section Header
           const secLen = buf.buffer.length - secIdx;
           buf.patchUInt16(secIdx, 0x8000 | (secLen & 0x3FFF));
+
+          // Track section byte range
+          if (sec.nodeId) byteMap[String(sec.nodeId)] = { start: secIdx, end: buf.buffer.length };
         });
       }
 
       // Evaluate RLen and patch current Tab Header
       const tabLen = buf.buffer.length - tabIdx;
       buf.patchUInt16(tabIdx, 0x4000 | (tabLen & 0x3FFF));
+
+      // Track tab byte range
+      if (tab.nodeId) byteMap[String(tab.nodeId)] = { start: tabIdx, end: buf.buffer.length };
     });
   }
 
@@ -321,6 +332,7 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
 
   return {
     prog: new Uint8Array(buf.buffer),
-    str: new Uint8Array(strBuf.buffer)
+    str: new Uint8Array(strBuf.buffer),
+    byteMap
   };
 };

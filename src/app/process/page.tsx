@@ -50,7 +50,8 @@ export default function ProcessView() {
   const [modalMode, setModalMode] = useState<'json' | 'hex'>('json');
   const [hexDumpText, setHexDumpText] = useState<string>('');
   const [selectedHexSource, setSelectedHexSource] = useState<'myProg' | 'myString'>('myProg');
-  const [compiledProjectResult, setCompiledProjectResult] = useState<{ prog: Uint8Array; str: Uint8Array; startAddr: number } | null>(null);
+  const [compiledProjectResult, setCompiledProjectResult] = useState<{ prog: Uint8Array; str: Uint8Array; startAddr: number; byteMap: Record<string, { start: number; end: number }> } | null>(null);
+  const [hexHighlightId, setHexHighlightId] = useState<string | null>(null);
 
   const [leftPanelWidth, setLeftPanelWidth] = useState<number>(() => {
     if (typeof window !== 'undefined') {
@@ -244,8 +245,10 @@ export default function ProcessView() {
           if (sec.rows) {
             let rowIdx = 1;
             for (const row of sec.rows) {
+              const rowNodeId = `${tab.id}::${sec.id}::${row.id}`;
               resultRows.push({
                 id: rowIdx,
+                nodeId: rowNodeId,
                 label: row.label || '',
                 command: row.command,
                 composeRowView: getComposedRowString(row)
@@ -256,6 +259,7 @@ export default function ProcessView() {
           }
           resultSections.push({
             id: `sec_${secIdx}`,
+            nodeId: sec.id,
             name: sec.name,
             exec: sec.exec,
             rows: resultRows
@@ -264,6 +268,7 @@ export default function ProcessView() {
         }
         resultTabs.push({
           id: `tab_${tabIdx}`,
+          nodeId: tab.id,
           name: tab.name,
           sections: resultSections
         });
@@ -280,8 +285,10 @@ export default function ProcessView() {
       setCompiledProjectResult({
         prog: result.prog,
         str: result.str,
-        startAddr: startAddressDec
+        startAddr: startAddressDec,
+        byteMap: result.byteMap
       });
+      setHexHighlightId(null);
     } catch (err) {
       console.warn("Auto-compile failed:", err);
     }
@@ -731,13 +738,24 @@ export default function ProcessView() {
             
             {Object.values(nodes).filter(n => n.type === 'tab').map(tab => {
               const isTabCollapsed = !!collapsedNodes[tab.id];
+              const isTabHighlighted = hexHighlightId === tab.id;
 
               return (
                 <div key={tab.id} className="mb-2">
-                  <div className="flex items-center text-pink-600 dark:text-pink-400 font-bold mb-1 select-none">
+                  <div 
+                    className={`flex items-center font-bold mb-1 select-none rounded-md px-1 -ml-1 transition-colors cursor-pointer ${
+                      isTabHighlighted 
+                        ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400' 
+                        : 'text-pink-600 dark:text-pink-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                    }`}
+                    onClick={() => {
+                      setHexHighlightId(tab.id);
+                      setSelectedHexSource('myProg');
+                    }}
+                  >
                     <span 
-                      onClick={() => toggleNode(tab.id)}
-                      className="cursor-pointer w-5 h-5 flex items-center justify-center mr-1 text-center hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-md transition-colors font-bold text-sm"
+                      onClick={(e) => { e.stopPropagation(); toggleNode(tab.id); }}
+                      className="cursor-pointer w-5 h-5 flex items-center justify-center mr-1 text-center hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-md transition-colors font-bold text-sm shrink-0"
                     >
                       {isTabCollapsed ? '+' : '-'}
                     </span>
@@ -748,13 +766,24 @@ export default function ProcessView() {
                     <div className="pl-4 border-l border-slate-100 dark:border-slate-800/80 ml-2 space-y-1.5">
                       {Object.values(nodes).filter(n => n.parentId === tab.id && n.type === 'section').map(sec => {
                         const isSecCollapsed = !!collapsedNodes[sec.id];
+                        const isSecHighlighted = hexHighlightId === sec.id;
                         
                         return (
                           <div key={sec.id} className="mt-1">
-                            <div className="flex items-center text-emerald-600 dark:text-emerald-500 font-semibold mb-1 select-none">
+                            <div 
+                              className={`flex items-center font-semibold mb-1 select-none rounded-md px-1 -ml-1 transition-colors cursor-pointer ${
+                                isSecHighlighted
+                                  ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400'
+                                  : 'text-emerald-600 dark:text-emerald-500 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                              }`}
+                              onClick={() => {
+                                setHexHighlightId(sec.id);
+                                setSelectedHexSource('myProg');
+                              }}
+                            >
                               <span 
-                                onClick={() => toggleNode(sec.id)}
-                                className="cursor-pointer w-4 h-4 flex items-center justify-center mr-1 text-center hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded transition-colors font-bold text-xs"
+                                onClick={(e) => { e.stopPropagation(); toggleNode(sec.id); }}
+                                className="cursor-pointer w-4 h-4 flex items-center justify-center mr-1 text-center hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded transition-colors font-bold text-xs shrink-0"
                               >
                                 {isSecCollapsed ? '+' : '-'}
                               </span>
@@ -763,22 +792,32 @@ export default function ProcessView() {
                             
                             {!isSecCollapsed && (
                               <div className="pl-3 border-l border-slate-100 dark:border-slate-800 ml-1.5 space-y-0.5">
-                                {sec.rows && sec.rows.map((row, idx) => (
-                                  <div 
-                                    key={row.id} 
-                                    onClick={() => setActiveRow(row)}
-                                    onDoubleClick={() => handleRowDoubleClick(row)}
-                                    className={`pl-2 py-1.5 cursor-pointer flex items-center gap-2 rounded-lg transition-all ${
-                                      activeRow?.id === row.id 
-                                        ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-slate-800 dark:text-slate-100 font-bold' 
-                                        : 'hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent text-slate-500 dark:text-slate-400'
-                                    }`}
-                                  >
-                                    <span className="text-slate-350 dark:text-slate-600 w-4 font-mono text-right shrink-0 select-none text-[0.625rem]">{idx + 1}</span>
-                                    <span className="w-16 text-blue-600 dark:text-blue-400 font-bold truncate shrink-0" title={row.label}>{row.label || ''}</span>
-                                    <span className="flex-1 font-mono text-[0.5625rem] leading-tight flex flex-wrap break-all truncate">{row.command}</span>
-                                  </div>
-                                ))}
+                                {sec.rows && sec.rows.map((row, idx) => {
+                                  const rowNodeId = `${tab.id}::${sec.id}::${row.id}`;
+                                  const isRowHighlighted = hexHighlightId === rowNodeId;
+                                  return (
+                                    <div 
+                                      key={row.id} 
+                                      onClick={() => {
+                                        setActiveRow(row);
+                                        setHexHighlightId(rowNodeId);
+                                        setSelectedHexSource('myProg');
+                                      }}
+                                      onDoubleClick={() => handleRowDoubleClick(row)}
+                                      className={`pl-2 py-1.5 cursor-pointer flex items-center gap-2 rounded-lg transition-all ${
+                                        isRowHighlighted
+                                          ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 text-slate-800 dark:text-slate-100 font-bold'
+                                          : activeRow?.id === row.id 
+                                            ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-slate-800 dark:text-slate-100 font-bold' 
+                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent text-slate-500 dark:text-slate-400'
+                                      }`}
+                                    >
+                                      <span className="text-slate-350 dark:text-slate-600 w-4 font-mono text-right shrink-0 select-none text-[0.625rem]">{idx + 1}</span>
+                                      <span className="w-16 text-blue-600 dark:text-blue-400 font-bold truncate shrink-0" title={row.label}>{row.label || ''}</span>
+                                      <span className="flex-1 font-mono text-[0.5625rem] leading-tight flex flex-wrap break-all truncate">{row.command}</span>
+                                    </div>
+                                  );
+                                })}
                                 {(!sec.rows || sec.rows.length === 0) && (
                                   <div className="text-[0.625rem] text-slate-400 dark:text-slate-500 italic py-1 pl-4 select-none">
                                     Empty Section
@@ -907,30 +946,60 @@ export default function ProcessView() {
              </div>
              
              <div className="space-y-1 overflow-y-auto flex-1 pl-1 pr-1">
-                {displayedHexLines.map((line, idx) => {
-                  const parts = line.bytes.split(' ').filter(Boolean);
-                  const paddedBytes = Array.from({ length: 16 }, (_, i) => parts[i] || '');
+                {(() => {
+                  const highlightRange = (hexHighlightId && compiledProjectResult?.byteMap?.[hexHighlightId] && selectedHexSource === 'myProg')
+                    ? compiledProjectResult.byteMap[hexHighlightId]
+                    : null;
+                  // Determine color theme based on what kind of node is highlighted
+                  const isRowHL = hexHighlightId?.includes('::') ?? false;
+                  const isSecHL = !isRowHL && hexHighlightId !== null && !compiledProjectResult?.byteMap?.[hexHighlightId ?? '']?.start === false;
+                  const hlBg = isRowHL
+                    ? 'bg-amber-400/30 dark:bg-amber-500/25 text-amber-700 dark:text-amber-300'
+                    : hexHighlightId && !hexHighlightId.includes('::')
+                      ? (compiledProjectResult?.byteMap?.[hexHighlightId] ? 'bg-blue-400/30 dark:bg-blue-500/25 text-blue-700 dark:text-blue-300' : '')
+                      : '';
+                  const tabHlBg = hexHighlightId && !hexHighlightId.includes('::') && compiledProjectResult?.byteMap?.[hexHighlightId]
+                    ? 'bg-purple-400/30 dark:bg-purple-500/25 text-purple-700 dark:text-purple-300'
+                    : hlBg;
+                  // Detect level: row (has ::), section or tab (no ::)
+                  // Actually: tab IDs don't have :: and are the node IDs; sec IDs also don't have ::
+                  // We differentiate by checking if node type matches - simpler: row always has '::'
+                  const cellHlClass = isRowHL ? 'bg-amber-400/30 dark:bg-amber-500/25 text-amber-700 dark:text-amber-300 rounded-sm' : 'bg-indigo-400/30 dark:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 rounded-sm';
                   
-                  return (
-                    <div key={idx} className="flex hover:bg-slate-100 dark:hover:bg-slate-900/50 py-0.5 rounded-md transition-colors min-w-max shrink-0">
-                      <div className="w-[72px] shrink-0 text-slate-400 dark:text-slate-500 select-none font-mono">{line.offset}</div>
-                      <div className="flex shrink-0 text-slate-800 dark:text-slate-200 font-mono">
-                        {paddedBytes.map((b, i) => (
-                          <span key={i} className="w-[22px] shrink-0 text-center">{b}</span>
-                        ))}
+                  return displayedHexLines.map((line, idx) => {
+                    const lineStartByte = idx * 16;
+                    const parts = line.bytes.split(' ').filter(Boolean);
+                    const paddedBytes = Array.from({ length: 16 }, (_, i) => parts[i] || '');
+                    const hasAnyHighlight = highlightRange && (
+                      lineStartByte < highlightRange.end && lineStartByte + 16 > highlightRange.start
+                    );
+                    
+                    return (
+                      <div key={idx} className={`flex py-0.5 rounded-md transition-colors min-w-max shrink-0 ${hasAnyHighlight ? '' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50'}`}>
+                        <div className={`w-[72px] shrink-0 select-none font-mono ${hasAnyHighlight ? 'text-slate-600 dark:text-slate-300 font-bold' : 'text-slate-400 dark:text-slate-500'}`}>{line.offset}</div>
+                        <div className="flex shrink-0 text-slate-800 dark:text-slate-200 font-mono">
+                          {paddedBytes.map((b, i) => {
+                            const byteIndex = lineStartByte + i;
+                            const isHl = highlightRange && byteIndex >= highlightRange.start && byteIndex < highlightRange.end;
+                            return (
+                              <span key={i} className={`w-[22px] shrink-0 text-center transition-colors ${isHl ? cellHlClass : ''}`}>{b}</span>
+                            );
+                          })}
+                        </div>
+                        <div className={`w-[130px] shrink-0 text-right whitespace-nowrap font-mono pl-2 ${hasAnyHighlight ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                          {line.ascii}
+                        </div>
                       </div>
-                      <div className="w-[130px] shrink-0 text-right text-slate-400 dark:text-slate-500 whitespace-nowrap font-mono pl-2">
-                        {line.ascii}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
                 {displayedHexLines.length === 0 && (
                   <div className="text-[0.625rem] text-slate-400 dark:text-slate-500 italic py-4 text-center select-none">
                     No data to display.
                   </div>
                 )}
              </div>
+
              
              <div className="mt-3 bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 p-2.5 rounded-lg shrink-0 select-none mx-1">
                 <div className="text-[0.5625rem] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Payload metadata</div>
