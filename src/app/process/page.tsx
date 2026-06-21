@@ -127,6 +127,7 @@ export default function ProcessView() {
     let addressTracker = currentAddress;
     
     const tabs = Object.values(nodes).filter(n => n.type === 'tab');
+    let tabIdx = 1;
     for (const tab of tabs) {
       const tabAddress = addressTracker;
       const resultSections = [];
@@ -162,10 +163,11 @@ export default function ProcessView() {
       }
       
       resultTabs.push({
-        id: tab.id,
+        id: `tab_${tabIdx}`,
         name: tab.name,
         sections: resultSections
       });
+      tabIdx++;
     }
 
     const outputObj = {
