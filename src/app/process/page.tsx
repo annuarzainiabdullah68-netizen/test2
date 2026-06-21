@@ -58,11 +58,118 @@ export default function ProcessView() {
     }
   }, [startAddress]);
 
-  // Reset compiled project results when project changes
+  // Reset selected source when activeProjectId changes
   useEffect(() => {
-    setCompiledProjectResult(null);
     setSelectedHexSource('activeRow');
   }, [activeProjectId]);
+
+  // Auto-compile bytecode reactively whenever nodes, startAddress, or registry definitions change
+  useEffect(() => {
+    let startAddressDec = 0;
+    if (startAddress.toLowerCase().startsWith('0x')) {
+      startAddressDec = parseInt(startAddress.slice(2), 16);
+    } else {
+      startAddressDec = parseInt(startAddress, 10);
+    }
+    if (isNaN(startAddressDec)) {
+      startAddressDec = 0;
+    }
+
+    const storedPins = localStorage.getItem('Pin Register');
+    let pinReg: any[] = [];
+    if (storedPins) {
+      try {
+        pinReg = JSON.parse(storedPins);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    let cmdReg: any[] = [];
+    const storedCmds = localStorage.getItem('Cmd Register');
+    if (storedCmds) {
+      try {
+        const parsed = JSON.parse(storedCmds);
+        if (Array.isArray(parsed)) {
+          cmdReg = parsed.map((cmd: any) => ({
+            index: cmd.index,
+            Cmd: cmd.Cmd,
+            args: cmd.args || [],
+            ints: cmd.ints || [],
+            rets: cmd.rets || []
+          }));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    if (cmdReg.length === 0 && cmdDetails) {
+      cmdReg = Object.values(cmdDetails).map((cmd: any) => ({
+        index: cmd.index,
+        Cmd: cmd.Cmd,
+        args: cmd.args || [],
+        ints: cmd.ints || [],
+        rets: cmd.rets || []
+      }));
+    }
+
+    try {
+      const resultTabs = [];
+      let addressTracker = startAddressDec;
+      
+      const tabs = Object.values(nodes).filter(n => n.type === 'tab');
+      let tabIdx = 1;
+      for (const tab of tabs) {
+        const resultSections = [];
+        const sections = Object.values(nodes).filter(n => n.parentId === tab.id && n.type === 'section');
+        let secIdx = 1;
+        for (const sec of sections) {
+          const resultRows = [];
+          if (sec.rows) {
+            let rowIdx = 1;
+            for (const row of sec.rows) {
+              resultRows.push({
+                id: rowIdx,
+                label: row.label || '',
+                command: row.command,
+                composeRowView: getComposedRowString(row)
+              });
+              rowIdx++;
+              addressTracker += 48;
+            }
+          }
+          resultSections.push({
+            id: `sec_${secIdx}`,
+            name: sec.name,
+            exec: sec.exec,
+            rows: resultRows
+          });
+          secIdx++;
+        }
+        resultTabs.push({
+          id: `tab_${tabIdx}`,
+          name: tab.name,
+          sections: resultSections
+        });
+        tabIdx++;
+      }
+
+      const testJsonPayload = {
+        startAddress: startAddress,
+        startAddressDec: startAddressDec,
+        tabs: resultTabs
+      };
+
+      const result = compileBytecode(testJsonPayload, cmdReg, pinReg, startAddressDec);
+      setCompiledProjectResult({
+        prog: result.prog,
+        str: result.str,
+        startAddr: startAddressDec
+      });
+    } catch (err) {
+      console.warn("Auto-compile failed:", err);
+    }
+  }, [nodes, startAddress, cmdDetails, pinMacros, activeProjectId]);
 
   const getComposedRowString = (row: RowItem): string => {
     const match = row.command.match(/^([A-Z0-9_]+)\[(.*)\]$/);
