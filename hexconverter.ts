@@ -195,6 +195,8 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
   const buf = new ByteBuffer(startAddr);
   const strBuf = new ByteBuffer(0); // myString array starts at relative address 0
   const byteMap: Record<string, { start: number; end: number }> = {};
+  // Maps row.label -> absolute address of that row's rets slot in myProg
+  const retAddressMap: Record<string, number> = {};
 
   // --- Project Header ---
   buf.align(2);
@@ -259,6 +261,11 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
                   }
                   const retsEnd = buf.buffer.length;
 
+                  // Register the absolute address of this row's rets so pointer args can resolve it
+                  if (row.label && retsEnd > retsStart) {
+                    retAddressMap[String(row.label).trim()] = startAddr + retsStart;
+                  }
+
                   // C. Process Input Arguments (args)
                   const argsStart = buf.buffer.length;
                   const args = rawArgs.split(',').map((s: string) => s.trim());
@@ -290,10 +297,14 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
                         buf.pushUInt16(strBuf.currentAddress); // Write Address of String to myProg
                         strBuf.pushString(String(resolvedVal)); // Store actual string in myString
                         break;
-                      case '*': 
+                      case '*': {
                         buf.align(2);
-                        buf.pushUInt16(0); // Empty pointer placeholder
+                        // Resolve pointer: look up the label of the row whose rets slot is referenced
+                        const ptrLabel = String(resolvedVal).trim();
+                        const ptrAddr = retAddressMap[ptrLabel] ?? 0;
+                        buf.pushUInt16(ptrAddr);
                         break;
+                      }
                       default: buf.pushUInt8(Number(resolvedVal) || 0); break;
                     }
                   });
