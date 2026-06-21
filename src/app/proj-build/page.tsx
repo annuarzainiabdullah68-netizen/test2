@@ -34,7 +34,8 @@ export default function ProjBuild() {
   const { 
     nodes, setNodes, registry, usbConnected, setUsbConnected,
     projects, setProjects, activeProjectId, setActiveProjectId, createProject, deleteProject,
-    fontSize, pinMacros, cmdDetails, pendingEditRowId, setPendingEditRowId
+    fontSize, pinMacros, cmdDetails, pendingEditRowId, setPendingEditRowId,
+    editFromProcess, setEditFromProcess
   } = useApp();
 
   useEffect(() => {
@@ -740,6 +741,10 @@ export default function ProjBuild() {
        return next;
     });
     setShowEditRowModal(false);
+    if (editFromProcess) {
+      setEditFromProcess(false);
+      router.push('/process');
+    }
   };
 
   const deleteRowFromDeepModal = (rowId: number | null) => {
@@ -754,6 +759,10 @@ export default function ProjBuild() {
       return next;
     });
     setShowEditRowModal(false);
+    if (editFromProcess) {
+      setEditFromProcess(false);
+      router.push('/process');
+    }
   };
 
   const currentCmdProto = registry.find(r => r.Cmd === editRowData.command);
@@ -1490,7 +1499,13 @@ export default function ProjBuild() {
               </button>
               
               <div className="flex gap-2">
-                <button onClick={() => setShowEditRowModal(false)} className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer font-medium">Cancel</button>
+                <button onClick={() => {
+                  setShowEditRowModal(false);
+                  if (editFromProcess) {
+                    setEditFromProcess(false);
+                    router.push('/process');
+                  }
+                }} className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer font-medium">Cancel</button>
                 <button onClick={saveEditRow} className="px-4 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-bold transition-all shadow-md cursor-pointer">Save Row</button>
               </div>
             </div>

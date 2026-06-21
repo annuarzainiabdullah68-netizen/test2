@@ -110,6 +110,8 @@ interface AppContextType {
   playChime: () => void;
   pendingEditRowId: number | null;
   setPendingEditRowId: React.Dispatch<React.SetStateAction<number | null>>;
+  editFromProcess: boolean;
+  setEditFromProcess: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const playChime = () => {
@@ -236,6 +238,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [pinMacros, setPinMacros] = useState<string[]>([]);
   const [cmdDetails, setCmdDetails] = useState<Record<string, any>>({});
   const [pendingEditRowId, setPendingEditRowId] = useState<number | null>(null);
+  const [editFromProcess, setEditFromProcess] = useState<boolean>(false);
 
   useEffect(() => {
     // Load from local storage after mount to prevent hydration mismatch
@@ -467,7 +470,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       pinMacros, setPinMacros,
       cmdDetails, setCmdDetails,
       playChime,
-      pendingEditRowId, setPendingEditRowId
+      pendingEditRowId, setPendingEditRowId,
+      editFromProcess, setEditFromProcess
     }}>
       {children}
     </AppContext.Provider>

@@ -7,7 +7,7 @@ import { Cpu } from 'lucide-react';
 
 export default function ProcessView() {
   const router = useRouter();
-  const { nodes, registry, activeRow, setActiveRow, getCompiledHex, usbConnected, activeProjectId, pinMacros, cmdDetails, setPendingEditRowId } = useApp();
+  const { nodes, registry, activeRow, setActiveRow, getCompiledHex, usbConnected, activeProjectId, pinMacros, cmdDetails, setPendingEditRowId, setEditFromProcess } = useApp();
 
   useEffect(() => {
     if (!usbConnected) {
@@ -33,6 +33,7 @@ export default function ProcessView() {
 
   const handleRowDoubleClick = (row: RowItem) => {
     setPendingEditRowId(row.id);
+    setEditFromProcess(true);
     router.push('/proj-build');
   };
 
