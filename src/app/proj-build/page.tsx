@@ -253,16 +253,16 @@ export default function ProjBuild() {
             {/* Table Container */}
             <div className="flex-1 border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden flex flex-col bg-slate-50/50 dark:bg-[#0a0f18]/30 min-h-0 shadow-sm">
               
-              {/* Table Headers */}
-              <div className="flex bg-slate-100 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800/60 py-3 px-5 font-bold text-[0.625rem] text-[#d97706] dark:text-amber-500 uppercase tracking-wider select-none">
-                <div className="w-[30%] text-left shrink-0">Project Name</div>
-                <div className="w-[45%] px-2 text-left shrink-0">Remark</div>
-                <div className="w-[20%] text-right shrink-0">Last Edit</div>
-                <div className="w-[5%] shrink-0"></div>
-              </div>
-
               {/* Table Body (Limited to 7 items/lines, scrollbar if needed) */}
               <div className="flex-1 overflow-y-auto max-h-[260px] divide-y divide-slate-150 dark:divide-slate-800/60">
+                
+                {/* Table Headers */}
+                <div className="sticky top-0 z-10 flex bg-slate-100 dark:bg-[#0a0f18] border-b border-slate-200 dark:border-slate-800/60 py-3 px-5 font-bold text-[0.625rem] text-[#d97706] dark:text-amber-500 uppercase tracking-wider select-none">
+                  <div className="w-[30%] text-left shrink-0">Project Name</div>
+                  <div className="w-[45%] px-2 text-left shrink-0">Remark</div>
+                  <div className="w-[25%] text-right pr-8 shrink-0">Last Edit</div>
+                </div>
+
                 {sortedProjects.map((proj) => (
                   <div 
                     key={proj.id}
@@ -292,10 +292,11 @@ export default function ProjBuild() {
                         : <span className="italic opacity-30">No description provided</span>
                       }
                     </div>
-                    <div className="w-[20%] text-right font-mono text-[0.625rem] text-slate-400 dark:text-slate-500 shrink-0">
+                    <div className="w-[25%] text-right font-mono text-[0.625rem] text-slate-400 dark:text-slate-500 shrink-0 pr-8">
                       {proj.lastEdit}
                     </div>
-                    <div className="w-[5%] text-right shrink-0">
+                    {/* Absolute Delete Button on Hover */}
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center shrink-0">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
