@@ -760,24 +760,35 @@ export default function ProcessView() {
             </div>
           </div>
           <div className="p-3 overflow-auto font-mono text-[0.625rem] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0a0f18]/30 flex-1 transition-colors shadow-inner flex flex-col min-h-0 select-text">
-             <div className="flex gap-2 mb-2 text-blue-600 dark:text-blue-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 text-[0.5625rem] tracking-wider select-none min-w-[400px] shrink-0">
+             <div className="flex gap-3 mb-2 text-blue-600 dark:text-blue-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 text-[0.5625rem] tracking-wider select-none min-w-[550px] shrink-0">
                 <div className="w-16 shrink-0">OFFSET</div>
-                <div className="w-[240px] shrink-0 flex justify-between">0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F</div>
-                <div className="w-20 shrink-0 text-right">ASCII</div>
+                <div className="w-[350px] shrink-0 flex justify-between font-mono">
+                  {['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'].map(h => (
+                    <span key={h} className="w-[20px] shrink-0 text-center">{h}</span>
+                  ))}
+                </div>
+                <div className="w-28 shrink-0 text-right">ASCII</div>
              </div>
              
              <div className="space-y-1 overflow-y-auto flex-1">
-                {displayedHexLines.map((line, idx) => (
-                  <div key={idx} className="flex gap-2 hover:bg-slate-100 dark:hover:bg-slate-900/50 py-0.5 rounded-md px-1 transition-colors min-w-[400px] shrink-0">
-                    <div className="w-16 shrink-0 text-slate-400 dark:text-slate-400 select-none">{line.offset}</div>
-                    <div className="w-[240px] shrink-0 flex justify-between text-slate-800 dark:text-slate-200 tracking-wider">
-                      {line.bytes}
+                {displayedHexLines.map((line, idx) => {
+                  const parts = line.bytes.split(' ').filter(Boolean);
+                  const paddedBytes = Array.from({ length: 16 }, (_, i) => parts[i] || '');
+                  
+                  return (
+                    <div key={idx} className="flex gap-3 hover:bg-slate-100 dark:hover:bg-slate-900/50 py-0.5 rounded-md px-1 transition-colors min-w-[550px] shrink-0">
+                      <div className="w-16 shrink-0 text-slate-400 dark:text-slate-400 select-none">{line.offset}</div>
+                      <div className="w-[350px] shrink-0 flex justify-between text-slate-800 dark:text-slate-200 tracking-wider font-mono">
+                        {paddedBytes.map((b, i) => (
+                          <span key={i} className="w-[20px] shrink-0 text-center">{b}</span>
+                        ))}
+                      </div>
+                      <div className="w-28 shrink-0 text-right text-slate-400 dark:text-slate-400 tracking-wider whitespace-nowrap font-mono">
+                        {line.ascii}
+                      </div>
                     </div>
-                    <div className="w-20 shrink-0 text-right text-slate-400 dark:text-slate-400 tracking-wider whitespace-nowrap">
-                      {line.ascii}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {displayedHexLines.length === 0 && (
                   <div className="text-[0.625rem] text-slate-400 dark:text-slate-500 italic py-4 text-center select-none">
                     No data to display.
