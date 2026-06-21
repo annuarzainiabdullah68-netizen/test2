@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp, RowItem } from '../context/AppContext';
 import { Cpu } from 'lucide-react';
+import { compileBytecode, generateHexDump } from '../../../hexconverter';
 
 export default function ProcessView() {
   const router = useRouter();
@@ -46,6 +47,8 @@ export default function ProcessView() {
   });
   const [showJsonModal, setShowJsonModal] = useState<boolean>(false);
   const [generatedJson, setGeneratedJson] = useState<string>('');
+  const [modalMode, setModalMode] = useState<'json' | 'hex'>('json');
+  const [hexDumpText, setHexDumpText] = useState<string>('');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -177,7 +180,71 @@ export default function ProcessView() {
     };
 
     setGeneratedJson(JSON.stringify(outputObj, null, 2));
+    setModalMode('json');
     setShowJsonModal(true);
+  };
+
+  const handleProceedToHex = () => {
+    let startAddressDec = 0;
+    if (startAddress.toLowerCase().startsWith('0x')) {
+      startAddressDec = parseInt(startAddress.slice(2), 16);
+    } else {
+      startAddressDec = parseInt(startAddress, 10);
+    }
+    if (isNaN(startAddressDec)) {
+      startAddressDec = 0;
+    }
+
+    const storedPins = localStorage.getItem('Pin Register');
+    let pinReg: any[] = [];
+    if (storedPins) {
+      try {
+        pinReg = JSON.parse(storedPins);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    let cmdReg: any[] = [];
+    const storedCmds = localStorage.getItem('Cmd Register');
+    if (storedCmds) {
+      try {
+        const parsed = JSON.parse(storedCmds);
+        if (Array.isArray(parsed)) {
+          cmdReg = parsed.map((cmd: any) => ({
+            index: cmd.index,
+            Cmd: cmd.Cmd,
+            args: cmd.args || [],
+            ints: cmd.ints || [],
+            rets: cmd.rets || []
+          }));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    if (cmdReg.length === 0 && cmdDetails) {
+      cmdReg = Object.values(cmdDetails).map((cmd: any) => ({
+        index: cmd.index,
+        Cmd: cmd.Cmd,
+        args: cmd.args || [],
+        ints: cmd.ints || [],
+        rets: cmd.rets || []
+      }));
+    }
+
+    try {
+      const parsedJson = JSON.parse(generatedJson);
+      const result = compileBytecode(parsedJson, cmdReg, pinReg, startAddressDec);
+      const progDump = generateHexDump(result.prog, startAddressDec);
+      const strDump = generateHexDump(result.str, 0);
+      const hexDumpStr = `--- myProg ---\n${progDump}\n\n--- myString ---\n${strDump}`;
+      setHexDumpText(hexDumpStr);
+      setModalMode('hex');
+    } catch (err) {
+      console.error(err);
+      alert("Failed to parse the generated JSON or compile bytecode.");
+    }
   };
 
   const toggleNode = (id: string) => {
@@ -537,36 +604,63 @@ export default function ProcessView() {
 
       </div>
 
-      {/* Generated JSON Modal */}
+      {/* Generated JSON / Hex Dump Modal */}
       {showJsonModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 h-[80vh]">
             <div className="py-3.5 px-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-[#070b11] flex justify-between items-center shrink-0">
-              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Generated Execution JSON</h2>
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                {modalMode === 'json' ? 'Generated Execution JSON' : 'Generated Hex Dump'}
+              </h2>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(generatedJson);
+                  navigator.clipboard.writeText(modalMode === 'json' ? generatedJson : hexDumpText);
                   alert("Copied to clipboard!");
                 }}
                 className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
               >
-                Copy JSON
+                {modalMode === 'json' ? 'Copy JSON' : 'Copy Hex Dump'}
               </button>
             </div>
             
             <div className="p-5 flex-1 overflow-y-auto min-h-0 bg-slate-50 dark:bg-[#0a0f18] text-slate-800 dark:text-slate-200">
               <pre className="text-left font-mono text-[0.625rem] leading-relaxed whitespace-pre-wrap select-all bg-white dark:bg-[#121824] p-4 border border-slate-200 dark:border-slate-800 rounded-xl h-full overflow-y-auto">
-                {generatedJson}
+                {modalMode === 'json' ? generatedJson : hexDumpText}
               </pre>
             </div>
 
-            <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-[#070b11] flex justify-end shrink-0">
-              <button
-                onClick={() => setShowJsonModal(false)}
-                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer hover:opacity-95"
-              >
-                Close
-              </button>
+            <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-[#070b11] flex justify-end gap-2 shrink-0">
+              {modalMode === 'json' ? (
+                <>
+                  <button
+                    onClick={handleProceedToHex}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+                  >
+                    Proceed
+                  </button>
+                  <button
+                    onClick={() => setShowJsonModal(false)}
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer hover:opacity-95"
+                  >
+                    Close
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setModalMode('json')}
+                    className="px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-750 dark:text-slate-250 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={() => setShowJsonModal(false)}
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer hover:opacity-95"
+                  >
+                    Close
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
