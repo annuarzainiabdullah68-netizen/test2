@@ -238,8 +238,9 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
               buf.align(2);
               const rowIdx = buf.buffer.length;
               buf.pushUInt16(0xC000);
+              const headerEnd = buf.buffer.length; // rowIdx + 2
 
-              const match = row.command.match(/^([A-Z0-9_]+)\[(.*)\]$/);
+              const match = row.command.match(/^([A-Z0-9_]+)\[(.*)]\]$/) || row.command.match(/^([A-Z0-9_]+)\[(.*)\]$/);
               if (match) {
                 const cmdName = match[1];
                 const rawArgs = match[2];
@@ -247,14 +248,19 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
 
                 if (def) {
                   // A. Write Opcode (1 byte)
+                  const opcodeStart = buf.buffer.length;
                   buf.pushUInt8(def.index);
+                  const opcodeEnd = buf.buffer.length;
 
                   // B. Allocate Return Variables (rets)
+                  const retsStart = buf.buffer.length;
                   if (def.rets) {
                     def.rets.forEach(retDef => buf.pushZeroedType(retDef.type));
                   }
+                  const retsEnd = buf.buffer.length;
 
                   // C. Process Input Arguments (args)
+                  const argsStart = buf.buffer.length;
                   const args = rawArgs.split(',').map((s: string) => s.trim());
                   def.args.forEach((argDef, i) => {
                     const valStr = args[i] || "";
@@ -291,10 +297,23 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
                       default: buf.pushUInt8(Number(resolvedVal) || 0); break;
                     }
                   });
+                  const argsEnd = buf.buffer.length;
 
                   // D. Allocate Internal State Variables (ints)
+                  const intsStart = buf.buffer.length;
                   if (def.ints) {
                     def.ints.forEach(intDef => buf.pushZeroedType(intDef.type));
+                  }
+                  const intsEnd = buf.buffer.length;
+
+                  // Track sub-ranges for this row
+                  if (row.nodeId) {
+                    const id = String(row.nodeId);
+                    byteMap[`${id}::header`] = { start: rowIdx, end: headerEnd };
+                    byteMap[`${id}::opcode`] = { start: opcodeStart, end: opcodeEnd };
+                    byteMap[`${id}::rets`]   = { start: retsStart,   end: retsEnd   };
+                    byteMap[`${id}::args`]   = { start: argsStart,   end: argsEnd   };
+                    byteMap[`${id}::ints`]   = { start: intsStart,   end: intsEnd   };
                   }
                 }
               }
@@ -303,7 +322,7 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
               const rowLen = buf.buffer.length - rowIdx;
               buf.patchUInt16(rowIdx, 0xC000 | (rowLen & 0x3FFF));
 
-              // Track row byte range
+              // Track overall row byte range
               if (row.nodeId) byteMap[String(row.nodeId)] = { start: rowIdx, end: buf.buffer.length };
             });
           }

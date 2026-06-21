@@ -945,48 +945,58 @@ export default function ProcessView() {
                 <div className="w-[130px] shrink-0 text-right pl-2">ASCII</div>
              </div>
              
-             <div className="space-y-1 overflow-y-auto flex-1 pl-1 pr-1">
+             <div className="space-y-px overflow-y-auto flex-1 pl-1 pr-1">
                 {(() => {
+                  const isRowHL = (hexHighlightId?.split('::').length ?? 0) >= 3;
                   const highlightRange = (hexHighlightId && compiledProjectResult?.byteMap?.[hexHighlightId] && selectedHexSource === 'myProg')
                     ? compiledProjectResult.byteMap[hexHighlightId]
                     : null;
-                  // Determine color theme based on what kind of node is highlighted
-                  const isRowHL = hexHighlightId?.includes('::') ?? false;
-                  const isSecHL = !isRowHL && hexHighlightId !== null && !compiledProjectResult?.byteMap?.[hexHighlightId ?? '']?.start === false;
-                  const hlBg = isRowHL
-                    ? 'bg-amber-400/30 dark:bg-amber-500/25 text-amber-700 dark:text-amber-300'
-                    : hexHighlightId && !hexHighlightId.includes('::')
-                      ? (compiledProjectResult?.byteMap?.[hexHighlightId] ? 'bg-blue-400/30 dark:bg-blue-500/25 text-blue-700 dark:text-blue-300' : '')
-                      : '';
-                  const tabHlBg = hexHighlightId && !hexHighlightId.includes('::') && compiledProjectResult?.byteMap?.[hexHighlightId]
-                    ? 'bg-purple-400/30 dark:bg-purple-500/25 text-purple-700 dark:text-purple-300'
-                    : hlBg;
-                  // Detect level: row (has ::), section or tab (no ::)
-                  // Actually: tab IDs don't have :: and are the node IDs; sec IDs also don't have ::
-                  // We differentiate by checking if node type matches - simpler: row always has '::'
-                  const cellHlClass = isRowHL ? 'bg-amber-400/30 dark:bg-amber-500/25 text-amber-700 dark:text-amber-300 rounded-sm' : 'bg-indigo-400/30 dark:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 rounded-sm';
-                  
+
+                  // Sub-ranges only populated for row-level highlights
+                  const sub = isRowHL && hexHighlightId ? {
+                    header: compiledProjectResult?.byteMap?.[`${hexHighlightId}::header`] ?? null,
+                    opcode: compiledProjectResult?.byteMap?.[`${hexHighlightId}::opcode`] ?? null,
+                    rets:   compiledProjectResult?.byteMap?.[`${hexHighlightId}::rets`]   ?? null,
+                    args:   compiledProjectResult?.byteMap?.[`${hexHighlightId}::args`]   ?? null,
+                    ints:   compiledProjectResult?.byteMap?.[`${hexHighlightId}::ints`]   ?? null,
+                  } : null;
+
+                  const getCellClass = (byteIndex: number): string => {
+                    if (!highlightRange || byteIndex < highlightRange.start || byteIndex >= highlightRange.end) return '';
+                    if (sub) {
+                      if (sub.opcode && byteIndex >= sub.opcode.start && byteIndex < sub.opcode.end)
+                        return 'bg-red-400/35 dark:bg-red-500/30 text-red-700 dark:text-red-300 font-bold rounded-sm';
+                      if (sub.rets && byteIndex >= sub.rets.start && byteIndex < sub.rets.end)
+                        return 'bg-emerald-400/35 dark:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 rounded-sm';
+                      if (sub.args && byteIndex >= sub.args.start && byteIndex < sub.args.end)
+                        return 'bg-amber-400/40 dark:bg-amber-500/30 text-amber-700 dark:text-amber-200 font-semibold rounded-sm';
+                      if (sub.ints && byteIndex >= sub.ints.start && byteIndex < sub.ints.end)
+                        return 'bg-purple-400/35 dark:bg-purple-500/30 text-purple-700 dark:text-purple-300 rounded-sm';
+                      if (sub.header && byteIndex >= sub.header.start && byteIndex < sub.header.end)
+                        return 'bg-slate-400/40 dark:bg-slate-500/30 text-slate-600 dark:text-slate-300 rounded-sm';
+                    }
+                    // Section or Tab: single indigo tint
+                    return 'bg-indigo-400/30 dark:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 rounded-sm';
+                  };
+
                   return displayedHexLines.map((line, idx) => {
                     const lineStartByte = idx * 16;
                     const parts = line.bytes.split(' ').filter(Boolean);
                     const paddedBytes = Array.from({ length: 16 }, (_, i) => parts[i] || '');
-                    const hasAnyHighlight = highlightRange && (
-                      lineStartByte < highlightRange.end && lineStartByte + 16 > highlightRange.start
-                    );
-                    
+                    const lineInRange = highlightRange && lineStartByte < highlightRange.end && lineStartByte + 16 > highlightRange.start;
+
                     return (
-                      <div key={idx} className={`flex py-0.5 rounded-md transition-colors min-w-max shrink-0 ${hasAnyHighlight ? '' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50'}`}>
-                        <div className={`w-[72px] shrink-0 select-none font-mono ${hasAnyHighlight ? 'text-slate-600 dark:text-slate-300 font-bold' : 'text-slate-400 dark:text-slate-500'}`}>{line.offset}</div>
-                        <div className="flex shrink-0 text-slate-800 dark:text-slate-200 font-mono">
+                      <div key={idx} className={`flex py-0.5 rounded-md transition-colors min-w-max shrink-0 ${lineInRange ? 'bg-slate-50/50 dark:bg-slate-900/20' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50'}`}>
+                        <div className={`w-[72px] shrink-0 select-none font-mono ${lineInRange ? 'text-slate-700 dark:text-slate-200 font-semibold' : 'text-slate-400 dark:text-slate-500'}`}>{line.offset}</div>
+                        <div className="flex shrink-0 font-mono">
                           {paddedBytes.map((b, i) => {
-                            const byteIndex = lineStartByte + i;
-                            const isHl = highlightRange && byteIndex >= highlightRange.start && byteIndex < highlightRange.end;
+                            const cellClass = getCellClass(lineStartByte + i);
                             return (
-                              <span key={i} className={`w-[22px] shrink-0 text-center transition-colors ${isHl ? cellHlClass : ''}`}>{b}</span>
+                              <span key={i} className={`w-[22px] shrink-0 text-center transition-colors ${cellClass || 'text-slate-800 dark:text-slate-200'}`}>{b}</span>
                             );
                           })}
                         </div>
-                        <div className={`w-[130px] shrink-0 text-right whitespace-nowrap font-mono pl-2 ${hasAnyHighlight ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                        <div className={`w-[130px] shrink-0 text-right whitespace-nowrap font-mono pl-2 ${lineInRange ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>
                           {line.ascii}
                         </div>
                       </div>
@@ -1000,14 +1010,35 @@ export default function ProcessView() {
                 )}
              </div>
 
-             
-             <div className="mt-3 bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 p-2.5 rounded-lg shrink-0 select-none mx-1">
+             {/* Legend — shown when a row is selected */}
+             {hexHighlightId && (hexHighlightId.split('::').length ?? 0) >= 3 && selectedHexSource === 'myProg' && (
+               <div className="mt-2 mx-1 flex flex-wrap gap-1 select-none shrink-0">
+                 <span className="flex items-center gap-1 text-[0.5rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-200/60 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300">
+                   <span className="w-2 h-2 rounded-sm bg-slate-400/60 inline-block" />HDR
+                 </span>
+                 <span className="flex items-center gap-1 text-[0.5rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                   <span className="w-2 h-2 rounded-sm bg-red-400/60 inline-block" />OPC
+                 </span>
+                 <span className="flex items-center gap-1 text-[0.5rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                   <span className="w-2 h-2 rounded-sm bg-emerald-400/60 inline-block" />RET
+                 </span>
+                 <span className="flex items-center gap-1 text-[0.5rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                   <span className="w-2 h-2 rounded-sm bg-amber-400/60 inline-block" />ARG
+                 </span>
+                 <span className="flex items-center gap-1 text-[0.5rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                   <span className="w-2 h-2 rounded-sm bg-purple-400/60 inline-block" />INT
+                 </span>
+               </div>
+             )}
+
+             <div className="mt-2 bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 p-2.5 rounded-lg shrink-0 select-none mx-1">
                 <div className="text-[0.5625rem] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Payload metadata</div>
                 <div className="text-[0.625rem] text-slate-600 dark:text-slate-300 font-semibold flex justify-between font-sans">
                   <span>{metadata.label}</span>
                   <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{metadata.value}</span>
                 </div>
              </div>
+
           </div>
         </div>
 
