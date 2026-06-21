@@ -49,8 +49,124 @@ export default function ProcessView() {
   const [generatedJson, setGeneratedJson] = useState<string>('');
   const [modalMode, setModalMode] = useState<'json' | 'hex'>('json');
   const [hexDumpText, setHexDumpText] = useState<string>('');
-  const [selectedHexSource, setSelectedHexSource] = useState<'activeRow' | 'myProg' | 'myString'>('activeRow');
+  const [selectedHexSource, setSelectedHexSource] = useState<'myProg' | 'myString'>('myProg');
   const [compiledProjectResult, setCompiledProjectResult] = useState<{ prog: Uint8Array; str: Uint8Array; startAddr: number } | null>(null);
+
+  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('layout_left_width');
+      if (stored) return parseInt(stored, 10);
+    }
+    return 380;
+  });
+  const [rightPanelWidth, setRightPanelWidth] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('layout_right_width');
+      if (stored) return parseInt(stored, 10);
+    }
+    return 380;
+  });
+  const [bottomPanelHeight, setBottomPanelHeight] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('layout_bottom_height');
+      if (stored) return parseInt(stored, 10);
+    }
+    return 112;
+  });
+
+  const isLeftResizingRef = useRef<boolean>(false);
+  const isRightResizingRef = useRef<boolean>(false);
+  const isBottomResizingRef = useRef<boolean>(false);
+
+  // Save panel dimensions to localStorage on changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('layout_left_width', leftPanelWidth.toString());
+    }
+  }, [leftPanelWidth]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('layout_right_width', rightPanelWidth.toString());
+    }
+  }, [rightPanelWidth]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('layout_bottom_height', bottomPanelHeight.toString());
+    }
+  }, [bottomPanelHeight]);
+
+  const handleLeftMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isLeftResizingRef.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  const handleRightMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isRightResizingRef.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  const handleBottomMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isBottomResizingRef.current = true;
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isLeftResizingRef.current) {
+        const leftPanelEl = document.getElementById('left-panel');
+        if (leftPanelEl) {
+          const rect = leftPanelEl.getBoundingClientRect();
+          const newWidth = e.clientX - rect.left;
+          if (newWidth >= 280 && newWidth <= 600) {
+            setLeftPanelWidth(newWidth);
+          }
+        }
+      } else if (isRightResizingRef.current) {
+        const rightPanelEl = document.getElementById('right-panel');
+        if (rightPanelEl) {
+          const rect = rightPanelEl.getBoundingClientRect();
+          const newWidth = rect.right - e.clientX;
+          if (newWidth >= 320 && newWidth <= 800) {
+            setRightPanelWidth(newWidth);
+          }
+        }
+      } else if (isBottomResizingRef.current) {
+        const bottomPanelEl = document.getElementById('bottom-panel');
+        if (bottomPanelEl) {
+          const rect = bottomPanelEl.getBoundingClientRect();
+          const newHeight = rect.bottom - e.clientY;
+          if (newHeight >= 60 && newHeight <= 450) {
+            setBottomPanelHeight(newHeight);
+          }
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isLeftResizingRef.current || isRightResizingRef.current || isBottomResizingRef.current) {
+        isLeftResizingRef.current = false;
+        isRightResizingRef.current = false;
+        isBottomResizingRef.current = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -60,7 +176,7 @@ export default function ProcessView() {
 
   // Reset selected source when activeProjectId changes
   useEffect(() => {
-    setSelectedHexSource('activeRow');
+    setSelectedHexSource('myProg');
   }, [activeProjectId]);
 
   // Auto-compile bytecode reactively whenever nodes, startAddress, or registry definitions change
@@ -517,11 +633,9 @@ export default function ProcessView() {
     );
   };
 
-  const activeRowHexLines = getCompiledHex(activeRow);
-
   const getDisplayedHexLines = () => {
-    if (selectedHexSource === 'activeRow' || !compiledProjectResult) {
-      return activeRowHexLines;
+    if (!compiledProjectResult) {
+      return [];
     }
     const helper = (data: Uint8Array, startAddr: number) => {
       if (!data || data.length === 0) return [];
@@ -550,10 +664,10 @@ export default function ProcessView() {
   const displayedHexLines = getDisplayedHexLines();
 
   const getPayloadMetadata = () => {
-    if (selectedHexSource === 'activeRow' || !compiledProjectResult) {
+    if (!compiledProjectResult) {
       return {
-        label: 'Active Row Payload Size:',
-        value: '48 Bytes (Compiled packet)'
+        label: 'Payload Size:',
+        value: '0 Bytes'
       };
     }
     if (selectedHexSource === 'myProg') {
@@ -581,10 +695,19 @@ export default function ProcessView() {
         </span>
       </div>
 
-      <div className="flex-1 grid grid-cols-12 gap-2 min-h-0">
+      <div className="flex-1 flex gap-2 min-h-0 overflow-hidden relative">
         
         {/* Left Panel: Tree View */}
-        <div className="col-span-12 md:col-span-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors shadow-sm min-h-0">
+        <div 
+          id="left-panel"
+          style={{ width: leftPanelWidth }}
+          className="shrink-0 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors shadow-sm min-h-0 relative"
+        >
+          {/* Draggable Resizer Handle */}
+          <div 
+            onMouseDown={handleLeftMouseDown}
+            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-500/50 active:bg-blue-600 transition-colors z-10"
+          />
           <div className="bg-slate-50 dark:bg-slate-900/60 p-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center transition-colors shrink-0 select-none">
             <span className="text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pr-1 truncate">
               Project execution logic tree
@@ -676,7 +799,7 @@ export default function ProcessView() {
         </div>
 
         {/* Center Panel: Command Context & Pins */}
-        <div className="col-span-12 md:col-span-4 flex flex-col gap-2 min-h-0">
+        <div className="flex-1 min-w-0 flex flex-col gap-2 min-h-0">
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 flex-1 flex flex-col overflow-hidden transition-colors shadow-sm min-h-0">
             <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 border-b border-slate-200 dark:border-slate-800 transition-colors shrink-0 select-none">
               <span className="text-[0.625rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active command metadata</span>
@@ -709,8 +832,17 @@ export default function ProcessView() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 h-28 flex flex-col overflow-hidden transition-colors shrink-0 shadow-sm">
-            <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 border-b border-slate-200 dark:border-slate-800 transition-colors shrink-0 select-none">
+          <div 
+            id="bottom-panel"
+            style={{ height: bottomPanelHeight }}
+            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors shrink-0 shadow-sm relative"
+          >
+            {/* Draggable Resizer Handle */}
+            <div 
+              onMouseDown={handleBottomMouseDown}
+              className="absolute top-0 left-0 right-0 h-1.5 cursor-row-resize hover:bg-blue-500/50 active:bg-blue-600 transition-colors z-10"
+            />
+            <div className="bg-slate-50 dark:bg-slate-900/60 pt-3 pb-2.5 px-2.5 border-b border-slate-200 dark:border-slate-800 transition-colors shrink-0 select-none">
               <span className="text-[0.625rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Utilised Peripheral hardware pins</span>
             </div>
             <div className="p-2.5 flex flex-wrap gap-1.5 overflow-y-auto content-start flex-1 bg-slate-50 dark:bg-[#0a0f18]/10">
@@ -733,16 +865,20 @@ export default function ProcessView() {
         </div>
 
         {/* Right Panel: Hex View */}
-        <div className="col-span-12 md:col-span-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors shadow-sm min-h-0">
+        <div 
+          id="right-panel"
+          style={{ width: rightPanelWidth }}
+          className="shrink-0 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors shadow-sm min-h-0 relative"
+        >
+          {/* Draggable Resizer Handle */}
+          <div 
+            onMouseDown={handleRightMouseDown}
+            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-500/50 active:bg-blue-600 transition-colors z-10"
+          />
+
           <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 border-b border-slate-200 dark:border-slate-800 transition-colors shrink-0 flex flex-col gap-1.5 select-none">
             <span className="text-[0.625rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hex payload preview generator</span>
             <div className="flex bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg text-[0.5625rem] font-bold select-none border border-slate-200 dark:border-slate-800">
-              <button 
-                onClick={() => setSelectedHexSource('activeRow')}
-                className={`flex-1 py-1 rounded transition-colors ${selectedHexSource === 'activeRow' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
-              >
-                Active Row
-              </button>
               <button 
                 onClick={() => setSelectedHexSource('myProg')}
                 className={`flex-1 py-1 rounded transition-colors ${selectedHexSource === 'myProg' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} ${!compiledProjectResult ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -759,31 +895,31 @@ export default function ProcessView() {
               </button>
             </div>
           </div>
-          <div className="p-3 overflow-auto font-mono text-[0.625rem] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0a0f18]/30 flex-1 transition-colors shadow-inner flex flex-col min-h-0 select-text">
-             <div className="flex gap-3 mb-2 text-blue-600 dark:text-blue-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 text-[0.5625rem] tracking-wider select-none min-w-[550px] shrink-0">
-                <div className="w-16 shrink-0">OFFSET</div>
-                <div className="w-[350px] shrink-0 flex justify-between font-mono">
+          <div className="py-3 pl-1 pr-1 overflow-auto font-mono text-[0.625rem] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0a0f18]/30 flex-1 transition-colors shadow-inner flex flex-col min-h-0 select-text">
+             <div className="flex mb-2 text-blue-600 dark:text-blue-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 text-[0.625rem] tracking-wider select-none min-w-max shrink-0 pl-1 pr-1 font-mono">
+                <div className="w-[72px] shrink-0">OFFSET</div>
+                <div className="flex shrink-0">
                   {['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'].map(h => (
-                    <span key={h} className="w-[20px] shrink-0 text-center">{h}</span>
+                    <span key={h} className="w-[22px] shrink-0 text-center">{h}</span>
                   ))}
                 </div>
-                <div className="w-28 shrink-0 text-right">ASCII</div>
+                <div className="w-[130px] shrink-0 text-right pl-2">ASCII</div>
              </div>
              
-             <div className="space-y-1 overflow-y-auto flex-1">
+             <div className="space-y-1 overflow-y-auto flex-1 pl-1 pr-1">
                 {displayedHexLines.map((line, idx) => {
                   const parts = line.bytes.split(' ').filter(Boolean);
                   const paddedBytes = Array.from({ length: 16 }, (_, i) => parts[i] || '');
                   
                   return (
-                    <div key={idx} className="flex gap-3 hover:bg-slate-100 dark:hover:bg-slate-900/50 py-0.5 rounded-md px-1 transition-colors min-w-[550px] shrink-0">
-                      <div className="w-16 shrink-0 text-slate-400 dark:text-slate-400 select-none">{line.offset}</div>
-                      <div className="w-[350px] shrink-0 flex justify-between text-slate-800 dark:text-slate-200 tracking-wider font-mono">
+                    <div key={idx} className="flex hover:bg-slate-100 dark:hover:bg-slate-900/50 py-0.5 rounded-md transition-colors min-w-max shrink-0">
+                      <div className="w-[72px] shrink-0 text-slate-400 dark:text-slate-500 select-none font-mono">{line.offset}</div>
+                      <div className="flex shrink-0 text-slate-800 dark:text-slate-200 font-mono">
                         {paddedBytes.map((b, i) => (
-                          <span key={i} className="w-[20px] shrink-0 text-center">{b}</span>
+                          <span key={i} className="w-[22px] shrink-0 text-center">{b}</span>
                         ))}
                       </div>
-                      <div className="w-28 shrink-0 text-right text-slate-400 dark:text-slate-400 tracking-wider whitespace-nowrap font-mono">
+                      <div className="w-[130px] shrink-0 text-right text-slate-400 dark:text-slate-500 whitespace-nowrap font-mono pl-2">
                         {line.ascii}
                       </div>
                     </div>
@@ -796,7 +932,7 @@ export default function ProcessView() {
                 )}
              </div>
              
-             <div className="mt-3 bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 p-2.5 rounded-lg shrink-0 select-none">
+             <div className="mt-3 bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 p-2.5 rounded-lg shrink-0 select-none mx-1">
                 <div className="text-[0.5625rem] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Payload metadata</div>
                 <div className="text-[0.625rem] text-slate-600 dark:text-slate-300 font-semibold flex justify-between font-sans">
                   <span>{metadata.label}</span>
