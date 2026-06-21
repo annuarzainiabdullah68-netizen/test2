@@ -49,12 +49,20 @@ export default function ProcessView() {
   const [generatedJson, setGeneratedJson] = useState<string>('');
   const [modalMode, setModalMode] = useState<'json' | 'hex'>('json');
   const [hexDumpText, setHexDumpText] = useState<string>('');
+  const [selectedHexSource, setSelectedHexSource] = useState<'activeRow' | 'myProg' | 'myString'>('activeRow');
+  const [compiledProjectResult, setCompiledProjectResult] = useState<{ prog: Uint8Array; str: Uint8Array; startAddr: number } | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('esp32_start_address', startAddress);
     }
   }, [startAddress]);
+
+  // Reset compiled project results when project changes
+  useEffect(() => {
+    setCompiledProjectResult(null);
+    setSelectedHexSource('activeRow');
+  }, [activeProjectId]);
 
   const getComposedRowString = (row: RowItem): string => {
     const match = row.command.match(/^([A-Z0-9_]+)\[(.*)\]$/);
@@ -402,7 +410,58 @@ export default function ProcessView() {
     );
   };
 
-  const hexLines = getCompiledHex(activeRow);
+  const activeRowHexLines = getCompiledHex(activeRow);
+
+  const getDisplayedHexLines = () => {
+    if (selectedHexSource === 'activeRow' || !compiledProjectResult) {
+      return activeRowHexLines;
+    }
+    const helper = (data: Uint8Array, startAddr: number) => {
+      if (!data || data.length === 0) return [];
+      const lines = [];
+      const BYTES_PER_LINE = 16;
+      let currentAddress = startAddr;
+      for (let i = 0; i < data.length; i += BYTES_PER_LINE) {
+        const chunk = data.slice(i, i + BYTES_PER_LINE);
+        const offset = currentAddress.toString(16).padStart(8, '0').toUpperCase();
+        const hexParts = Array.from(chunk).map(byte => byte.toString(16).padStart(2, '0').toUpperCase());
+        const bytes = hexParts.join(' ').padEnd(BYTES_PER_LINE * 3 - 1, ' ');
+        const ascii = Array.from(chunk).map(byte => (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.').join('');
+        lines.push({ offset, bytes, ascii });
+        currentAddress += BYTES_PER_LINE;
+      }
+      return lines;
+    };
+
+    if (selectedHexSource === 'myProg') {
+      return helper(compiledProjectResult.prog, compiledProjectResult.startAddr);
+    } else {
+      return helper(compiledProjectResult.str, 0);
+    }
+  };
+
+  const displayedHexLines = getDisplayedHexLines();
+
+  const getPayloadMetadata = () => {
+    if (selectedHexSource === 'activeRow' || !compiledProjectResult) {
+      return {
+        label: 'Active Row Payload Size:',
+        value: '48 Bytes (Compiled packet)'
+      };
+    }
+    if (selectedHexSource === 'myProg') {
+      return {
+        label: 'Project Bytecode Size:',
+        value: `${compiledProjectResult.prog.length} Bytes`
+      };
+    }
+    return {
+      label: 'String Pool Size:',
+      value: `${compiledProjectResult.str.length} Bytes`
+    };
+  };
+
+  const metadata = getPayloadMetadata();
 
   return (
     <div className="flex-1 flex flex-col bg-slate-50 dark:bg-[#0f172a] p-2 gap-2 overflow-hidden transition-colors duration-200 min-h-0">
@@ -568,8 +627,30 @@ export default function ProcessView() {
 
         {/* Right Panel: Hex View */}
         <div className="col-span-12 md:col-span-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors shadow-sm min-h-0">
-          <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 border-b border-slate-200 dark:border-slate-800 transition-colors shrink-0 select-none">
+          <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 border-b border-slate-200 dark:border-slate-800 transition-colors shrink-0 flex flex-col gap-1.5 select-none">
             <span className="text-[0.625rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hex payload preview generator</span>
+            <div className="flex bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg text-[0.5625rem] font-bold select-none border border-slate-200 dark:border-slate-800">
+              <button 
+                onClick={() => setSelectedHexSource('activeRow')}
+                className={`flex-1 py-1 rounded transition-colors ${selectedHexSource === 'activeRow' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+              >
+                Active Row
+              </button>
+              <button 
+                onClick={() => setSelectedHexSource('myProg')}
+                className={`flex-1 py-1 rounded transition-colors ${selectedHexSource === 'myProg' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} ${!compiledProjectResult ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!compiledProjectResult}
+              >
+                myProg
+              </button>
+              <button 
+                onClick={() => setSelectedHexSource('myString')}
+                className={`flex-1 py-1 rounded transition-colors ${selectedHexSource === 'myString' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} ${!compiledProjectResult ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!compiledProjectResult}
+              >
+                myString
+              </button>
+            </div>
           </div>
           <div className="p-3 overflow-y-auto font-mono text-[0.625rem] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0a0f18]/30 flex-1 transition-colors shadow-inner flex flex-col min-h-0 select-text">
              <div className="flex gap-2 mb-2 text-blue-600 dark:text-blue-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 text-[0.5625rem] tracking-wider select-none">
@@ -579,25 +660,30 @@ export default function ProcessView() {
              </div>
              
              <div className="space-y-1 overflow-y-auto flex-1">
-               {hexLines.map((line, idx) => (
-                 <div key={idx} className="flex gap-2 hover:bg-slate-100 dark:hover:bg-slate-900/50 py-0.5 rounded-md px-1 transition-colors">
-                   <div className="w-14 text-slate-450 dark:text-slate-500 select-none">{line.offset}</div>
-                   <div className="flex-1 flex justify-between text-slate-800 dark:text-slate-350 tracking-wider">
-                     {line.bytes}
-                   </div>
-                   <div className="w-16 text-right text-slate-450 dark:text-slate-500 tracking-wider">
-                     {line.ascii}
-                   </div>
-                 </div>
-               ))}
+                {displayedHexLines.map((line, idx) => (
+                  <div key={idx} className="flex gap-2 hover:bg-slate-100 dark:hover:bg-slate-900/50 py-0.5 rounded-md px-1 transition-colors">
+                    <div className="w-14 text-slate-450 dark:text-slate-500 select-none">{line.offset}</div>
+                    <div className="flex-1 flex justify-between text-slate-800 dark:text-slate-350 tracking-wider">
+                      {line.bytes}
+                    </div>
+                    <div className="w-16 text-right text-slate-450 dark:text-slate-500 tracking-wider">
+                      {line.ascii}
+                    </div>
+                  </div>
+                ))}
+                {displayedHexLines.length === 0 && (
+                  <div className="text-[0.625rem] text-slate-400 dark:text-slate-500 italic py-4 text-center select-none">
+                    No data to display.
+                  </div>
+                )}
              </div>
              
              <div className="mt-3 bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 p-2.5 rounded-lg shrink-0 select-none">
-               <div className="text-[0.5625rem] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Payload metadata</div>
-               <div className="text-[0.625rem] text-slate-600 dark:text-slate-300 font-semibold flex justify-between font-sans">
-                 <span>Active Row Payload Size:</span>
-                 <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">48 Bytes (Compiled packet)</span>
-               </div>
+                <div className="text-[0.5625rem] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Payload metadata</div>
+                <div className="text-[0.625rem] text-slate-600 dark:text-slate-300 font-semibold flex justify-between font-sans">
+                  <span>{metadata.label}</span>
+                  <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{metadata.value}</span>
+                </div>
              </div>
           </div>
         </div>
