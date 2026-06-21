@@ -38,6 +38,97 @@ export default function ProcessView() {
   };
 
   const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>({});
+  const [startAddress, setStartAddress] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('esp32_start_address') || '';
+    }
+    return '';
+  });
+  const [showJsonModal, setShowJsonModal] = useState<boolean>(false);
+  const [generatedJson, setGeneratedJson] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('esp32_start_address', startAddress);
+    }
+  }, [startAddress]);
+
+  const handleTestClick = () => {
+    const addr = window.prompt("Enter Start Address (e.g. 0x08000000 or 1000):", startAddress || "0x00");
+    if (addr === null) return;
+    const cleanAddr = addr.trim();
+    setStartAddress(cleanAddr);
+
+    let currentAddress = 0;
+    if (cleanAddr.toLowerCase().startsWith('0x')) {
+      currentAddress = parseInt(cleanAddr.slice(2), 16);
+    } else {
+      currentAddress = parseInt(cleanAddr, 10);
+    }
+    if (isNaN(currentAddress)) {
+      currentAddress = 0;
+    }
+
+    const resultTabs = [];
+    let addressTracker = currentAddress;
+    
+    const tabs = Object.values(nodes).filter(n => n.type === 'tab');
+    for (const tab of tabs) {
+      const tabAddress = addressTracker;
+      const resultSections = [];
+      
+      const sections = Object.values(nodes).filter(n => n.parentId === tab.id && n.type === 'section');
+      for (const sec of sections) {
+        const secAddress = addressTracker;
+        const resultRows = [];
+        
+        if (sec.rows) {
+          for (const row of sec.rows) {
+            const rowAddress = addressTracker;
+            const hexLines = getCompiledHex(row);
+            const allBytesStr = hexLines.map(line => line.bytes).join(' ');
+            
+            resultRows.push({
+              id: row.id,
+              label: row.label || '',
+              command: row.command,
+              address: '0x' + rowAddress.toString(16).toUpperCase().padStart(8, '0'),
+              addressDec: rowAddress,
+              bytes: allBytesStr
+            });
+            
+            addressTracker += 48;
+          }
+        }
+        
+        resultSections.push({
+          id: sec.id,
+          name: sec.name,
+          exec: sec.exec,
+          address: '0x' + secAddress.toString(16).toUpperCase().padStart(8, '0'),
+          addressDec: secAddress,
+          rows: resultRows
+        });
+      }
+      
+      resultTabs.push({
+        id: tab.id,
+        name: tab.name,
+        address: '0x' + tabAddress.toString(16).toUpperCase().padStart(8, '0'),
+        addressDec: tabAddress,
+        sections: resultSections
+      });
+    }
+
+    const outputObj = {
+      startAddress: cleanAddr,
+      startAddressDec: currentAddress,
+      tabs: resultTabs
+    };
+
+    setGeneratedJson(JSON.stringify(outputObj, null, 2));
+    setShowJsonModal(true);
+  };
 
   const toggleNode = (id: string) => {
     setCollapsedNodes(prev => ({ ...prev, [id]: !prev[id] }));
@@ -211,8 +302,24 @@ export default function ProcessView() {
         
         {/* Left Panel: Tree View */}
         <div className="col-span-12 md:col-span-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors shadow-sm min-h-0">
-          <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center transition-colors shrink-0 select-none">
-            <span className="text-[0.625rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Project execution logic tree</span>
+          <div className="bg-slate-50 dark:bg-slate-900/60 p-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center transition-colors shrink-0 select-none">
+            <span className="text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pr-1 truncate">
+              Project execution logic tree
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[0.5625rem] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1 font-mono">
+                Start Address:
+                <span className="text-amber-600 dark:text-amber-500 bg-slate-100 dark:bg-[#121824] px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
+                  {startAddress || '0x00'}
+                </span>
+              </span>
+              <button
+                onClick={handleTestClick}
+                className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 px-3 py-1 rounded-md border border-slate-250 dark:border-slate-700/80 text-[0.5625rem] font-bold tracking-wider uppercase transition-colors shadow-sm cursor-pointer"
+              >
+                Test
+              </button>
+            </div>
           </div>
           <div className="p-3 overflow-y-auto text-xs space-y-2 font-mono flex-1">
             
@@ -379,6 +486,41 @@ export default function ProcessView() {
         </div>
 
       </div>
+
+      {/* Generated JSON Modal */}
+      {showJsonModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 h-[80vh]">
+            <div className="py-3.5 px-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-[#070b11] flex justify-between items-center shrink-0">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Generated Execution JSON</h2>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(generatedJson);
+                  alert("Copied to clipboard!");
+                }}
+                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              >
+                Copy JSON
+              </button>
+            </div>
+            
+            <div className="p-5 flex-1 overflow-y-auto min-h-0 bg-slate-50 dark:bg-[#0a0f18] text-slate-800 dark:text-slate-200">
+              <pre className="text-left font-mono text-[0.625rem] leading-relaxed whitespace-pre-wrap select-all bg-white dark:bg-[#121824] p-4 border border-slate-200 dark:border-slate-800 rounded-xl h-full overflow-y-auto">
+                {generatedJson}
+              </pre>
+            </div>
+
+            <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-[#070b11] flex justify-end shrink-0">
+              <button
+                onClick={() => setShowJsonModal(false)}
+                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer hover:opacity-95"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

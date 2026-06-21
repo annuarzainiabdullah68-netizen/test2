@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp, NodeItem, RowItem } from '../context/AppContext';
-import { 
-  Plus, Trash2, Maximize, ZoomIn, ZoomOut, GripVertical, Cpu 
+import {
+  Plus, Trash2, Maximize, ZoomIn, ZoomOut, GripVertical, Cpu
 } from 'lucide-react';
 
 interface EditRowState {
@@ -31,7 +31,7 @@ interface PromptModalState {
 
 export default function ProjBuild() {
   const router = useRouter();
-  const { 
+  const {
     nodes, setNodes, registry, usbConnected, setUsbConnected,
     projects, setProjects, activeProjectId, setActiveProjectId, createProject, deleteProject,
     fontSize, pinMacros, cmdDetails, pendingEditRowId, setPendingEditRowId,
@@ -64,9 +64,9 @@ export default function ProjBuild() {
   const [newItemName, setNewItemName] = useState<string>('');
   const [executionMode, setExecutionMode] = useState<string>('0');
   const [manualReqNumber, setManualReqNumber] = useState<string>('');
-  
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null); 
-  const [canvasDraggedItem, setCanvasDraggedItem] = useState<{ secId: string; rowIndex: number } | null>(null); 
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [canvasDraggedItem, setCanvasDraggedItem] = useState<{ secId: string; rowIndex: number } | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [modalRows, setModalRows] = useState<RowItem[]>([]);
 
@@ -78,7 +78,7 @@ export default function ProjBuild() {
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [dragStartPos, setDragStartPos] = useState<{ x: number; y: number } | null>(null);
   const [lastMousePos, setLastMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  
+
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
 
 
@@ -131,7 +131,7 @@ export default function ProjBuild() {
     e.preventDefault();
     const delta = e.deltaY * -0.001;
     const newScale = Math.min(Math.max(0.3, scale + delta), 2.5);
-    
+
     if (canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
       const cursorX = e.clientX - rect.left;
@@ -148,7 +148,7 @@ export default function ProjBuild() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || isModalOpen) return;
-    
+
     const listener = (e: WheelEvent) => handleWheel(e);
     canvas.addEventListener('wheel', listener, { passive: false });
     return () => canvas.removeEventListener('wheel', listener);
@@ -182,11 +182,11 @@ export default function ProjBuild() {
     }
 
     const now = new Date();
-    const formattedDate = now.getFullYear() + '-' + 
-      String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-      String(now.getDate()).padStart(2, '0') + ' ' + 
-      String(now.getHours()).padStart(2, '0') + ':' + 
-      String(now.getMinutes()).padStart(2, '0') + ':' + 
+    const formattedDate = now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      String(now.getDate()).padStart(2, '0') + ' ' +
+      String(now.getHours()).padStart(2, '0') + ':' +
+      String(now.getMinutes()).padStart(2, '0') + ':' +
       String(now.getSeconds()).padStart(2, '0');
 
     setProjects(prev => {
@@ -243,7 +243,7 @@ export default function ProjBuild() {
     return (
       <div className="flex flex-col p-4 max-w-5xl mx-auto w-full transition-colors duration-200">
         <div className="w-full bg-white dark:bg-[#121824] rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col h-[520px] animate-in fade-in slide-in-from-bottom-2 duration-200">
-          
+
           {/* Main Card Area */}
           <div className="flex-1 bg-white dark:bg-[#121824] p-6 flex flex-col min-h-0 select-text">
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-3 uppercase tracking-widest select-none text-left">
@@ -252,10 +252,10 @@ export default function ProjBuild() {
 
             {/* Table Container */}
             <div className="flex-1 border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden flex flex-col bg-slate-50/50 dark:bg-[#0a0f18]/30 min-h-0 shadow-sm">
-              
+
               {/* Table Body (Limited to 7 items/lines, scrollbar if needed) */}
               <div className="flex-1 overflow-y-auto max-h-[260px] divide-y divide-slate-150 dark:divide-slate-800/60">
-                
+
                 {/* Table Headers */}
                 <div className="sticky top-0 z-10 flex bg-slate-100 dark:bg-[#0a0f18] border-b border-slate-200 dark:border-slate-800/60 py-3 px-5 font-bold text-[0.625rem] text-[#d97706] dark:text-amber-500 uppercase tracking-wider select-none">
                   <div className="w-[30%] text-left shrink-0">Project Name</div>
@@ -264,7 +264,7 @@ export default function ProjBuild() {
                 </div>
 
                 {sortedProjects.map((proj) => (
-                  <div 
+                  <div
                     key={proj.id}
                     onDoubleClick={() => setActiveProjectId(proj.id)}
                     onContextMenu={(e) => {
@@ -323,14 +323,14 @@ export default function ProjBuild() {
 
             {/* Bottom Actions */}
             <div className="flex justify-end gap-3 mt-5 shrink-0 select-none">
-              <button 
+              <button
                 onClick={handleExit}
                 className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs rounded-xl shadow-md hover:shadow-emerald-500/20 hover:opacity-95 transition-all cursor-pointer"
                 title="Disconnect USB & return to Main Hub"
               >
                 Exit
               </button>
-              <button 
+              <button
                 onClick={() => setShowCreateModal(true)}
                 className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs rounded-xl shadow-md hover:shadow-emerald-500/20 hover:opacity-95 transition-all cursor-pointer"
                 title="Create a new workflow project"
@@ -346,21 +346,21 @@ export default function ProjBuild() {
         {/* CREATE PROJECT MODAL */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <form 
+            <form
               onSubmit={handleCreateProjectSubmit}
               className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
             >
               <div className="py-4 px-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#0c121e]">
                 <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Create New Project</h2>
               </div>
-              
+
               <div className="p-5 space-y-4 text-left">
                 <div>
                   <label className="block text-[0.625rem] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-widest">
                     Project Name (Max 12 characters)
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     maxLength={12}
                     value={newProjName}
@@ -379,7 +379,7 @@ export default function ProjBuild() {
                   <label className="block text-[0.625rem] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-widest">
                     Remark / Description
                   </label>
-                  <textarea 
+                  <textarea
                     value={newProjRemark}
                     onChange={(e) => setNewProjRemark(e.target.value)}
                     placeholder="Enter project description (optional)..."
@@ -390,14 +390,14 @@ export default function ProjBuild() {
               </div>
 
               <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070b11] flex justify-end gap-2 shrink-0">
-                <button 
+                <button
                   type="button"
-                  onClick={() => { setShowCreateModal(false); setNewProjName(""); setNewProjRemark(""); }} 
+                  onClick={() => { setShowCreateModal(false); setNewProjName(""); setNewProjRemark(""); }}
                   className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   disabled={!newProjName.trim()}
                   className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -412,21 +412,21 @@ export default function ProjBuild() {
         {/* EDIT PROJECT MODAL */}
         {editProjectData.isOpen && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <form 
+            <form
               onSubmit={handleEditProjectSubmit}
               className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
             >
               <div className="py-4 px-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070b11]">
                 <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Edit Project Details</h2>
               </div>
-              
+
               <div className="p-5 space-y-4 text-left">
                 <div>
                   <label className="block text-[0.625rem] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-widest text-left">
                     Project Name (Max 12 characters)
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     maxLength={12}
                     value={editProjectData.name}
@@ -445,7 +445,7 @@ export default function ProjBuild() {
                   <label className="block text-[0.625rem] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-widest text-left">
                     Remark / Description
                   </label>
-                  <textarea 
+                  <textarea
                     value={editProjectData.remark}
                     onChange={(e) => setEditProjectData(prev => ({ ...prev, remark: e.target.value }))}
                     placeholder="Enter project description..."
@@ -456,14 +456,14 @@ export default function ProjBuild() {
               </div>
 
               <div className="py-3 px-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070b11] flex justify-end gap-2 shrink-0">
-                <button 
+                <button
                   type="button"
-                  onClick={() => setEditProjectData({ isOpen: false, projId: '', name: '', remark: '' })} 
+                  onClick={() => setEditProjectData({ isOpen: false, projId: '', name: '', remark: '' })}
                   className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   disabled={!editProjectData.name.trim()}
                   className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -495,7 +495,7 @@ export default function ProjBuild() {
     } else if (isNodeDragging && draggingNodeId) {
       const dx = (e.clientX - lastMousePos.x) / scale;
       const dy = (e.clientY - lastMousePos.y) / scale;
-      
+
       setNodes(prev => {
         const next = JSON.parse(JSON.stringify(prev));
         moveNodeSubtree(draggingNodeId, dx, dy, next);
@@ -512,7 +512,7 @@ export default function ProjBuild() {
 
         Object.values(nodes).forEach(n => {
           if (n.id === draggingNodeId) return;
-          
+
           const isValid = (draggedType === 'section' && n.type === 'tab') || (draggedType === 'tab' && n.type === 'project');
           if (isValid) {
             const cx = n.x + 56;
@@ -523,7 +523,7 @@ export default function ProjBuild() {
             }
           }
         });
-        
+
         setHoveredTargetId(foundTarget);
       }
     }
@@ -601,13 +601,13 @@ export default function ProjBuild() {
     e.stopPropagation();
     setCanvasDraggedItem({ secId, rowIndex });
   };
-  
+
   const handleCanvasDragEnd = () => {
     setCanvasDraggedItem(null);
   };
-  
+
   const handleCanvasDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); 
+    e.preventDefault();
   };
 
   const handleCanvasDrop = (e: React.DragEvent, targetSecId: string, targetRowIndex?: number) => {
@@ -713,7 +713,7 @@ export default function ProjBuild() {
     } else {
       cmd = row.command.split('[')[0] || 'PT0';
     }
-    
+
     // Pad the arguments to match the sum of x, y, and z from registry prototype
     const found = registry.find(r => r.Cmd === cmd);
     const totalLen = found ? (found.x + found.y + found.z) : 0;
@@ -726,20 +726,20 @@ export default function ProjBuild() {
 
   const saveEditRow = () => {
     setNodes(prev => {
-       const next: Record<string, NodeItem> = JSON.parse(JSON.stringify(prev));
-       Object.values(next).forEach((node) => {
-         if (node.type === 'section' && node.rows) {
-           const idx = node.rows.findIndex((r) => r.id === editRowData.id);
-           if (idx !== -1) {
-             const currentCmdProto = registry.find(r => r.Cmd === editRowData.command);
-             const currentX = currentCmdProto?.x || 0;
-             const argsOnly = editRowData.args.slice(0, currentX);
-             node.rows[idx].label = editRowData.label;
-             node.rows[idx].command = `${editRowData.command}[${argsOnly.join(', ')}]`;
-           }
-         }
-       });
-       return next;
+      const next: Record<string, NodeItem> = JSON.parse(JSON.stringify(prev));
+      Object.values(next).forEach((node) => {
+        if (node.type === 'section' && node.rows) {
+          const idx = node.rows.findIndex((r) => r.id === editRowData.id);
+          if (idx !== -1) {
+            const currentCmdProto = registry.find(r => r.Cmd === editRowData.command);
+            const currentX = currentCmdProto?.x || 0;
+            const argsOnly = editRowData.args.slice(0, currentX);
+            node.rows[idx].label = editRowData.label;
+            node.rows[idx].command = `${editRowData.command}[${argsOnly.join(', ')}]`;
+          }
+        }
+      });
+      return next;
     });
     setShowEditRowModal(false);
     if (editFromProcess) {
@@ -794,7 +794,7 @@ export default function ProjBuild() {
   }
 
   return (
-    <div 
+    <div
       className={`flex-1 flex flex-col bg-slate-50 dark:bg-[#0a0f18] overflow-hidden relative transition-colors duration-200 select-none ${isNodeDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       onMouseDown={handleCanvasMouseDown}
       onMouseMove={handleGlobalMouseMove}
@@ -807,18 +807,18 @@ export default function ProjBuild() {
       <div className="absolute top-3 left-3 z-20 flex gap-2">
         <button onClick={() => setScale(s => Math.min(s + 0.15, 2.5))} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><ZoomIn size={14} /></button>
         <button onClick={() => setScale(s => Math.max(s - 0.15, 0.3))} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><ZoomOut size={14} /></button>
-        <button onClick={() => { setScale(1); setPan({x:0, y:0}); }} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><Maximize size={14} /></button>
+        <button onClick={() => { setScale(1); setPan({ x: 0, y: 0 }); }} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"><Maximize size={14} /></button>
       </div>
 
       {/* Compile Button */}
       <div className="absolute top-3 right-3 z-20">
-         <button onClick={() => router.push('/process')} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold shadow-lg flex items-center gap-1.5 cursor-pointer">
-           Compile Workflow <Maximize size={12}/>
-         </button>
+        <button onClick={() => router.push('/process')} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold shadow-lg flex items-center gap-1.5 cursor-pointer">
+          Compile Workflow <Maximize size={12} />
+        </button>
       </div>
 
       {/* Interactive Grid Canvas */}
-      <div 
+      <div
         id="canvas-bg"
         className={`w-[10000px] h-[10000px] absolute origin-top-left transition-transform duration-75 ${isNodeDragging ? 'cursor-grabbing' : 'cursor-default'}`}
         style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}
@@ -846,7 +846,7 @@ export default function ProjBuild() {
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
           </defs>
-          
+
           {/* Edge Connector Splines */}
           {Object.values(nodes).map(node => {
             if (!node.parentId || !nodes[node.parentId]) return null;
@@ -858,13 +858,13 @@ export default function ProjBuild() {
             const d = `M ${x1} ${y1} C ${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}`;
             const isEdgeDragged = draggingNodeId === node.id || draggingNodeId === node.parentId;
             return (
-              <path 
-                key={`edge-${node.id}`} 
-                d={d} 
-                className="stroke-slate-400 dark:stroke-slate-500" 
-                strokeWidth="2" 
-                fill="none" 
-                opacity={isEdgeDragged ? "0.4" : "0.85"} 
+              <path
+                key={`edge-${node.id}`}
+                d={d}
+                className="stroke-slate-400 dark:stroke-slate-500"
+                strokeWidth="2"
+                fill="none"
+                opacity={isEdgeDragged ? "0.4" : "0.85"}
                 strokeDasharray={isEdgeDragged ? "4 4" : "none"}
               />
             );
@@ -873,24 +873,24 @@ export default function ProjBuild() {
 
         {/* Dragging Ghost Placeholder at starting position */}
         {isNodeDragging && dragStartPos && draggingNodeId && nodes[draggingNodeId] && (
-          <div 
-            className="absolute opacity-25 pointer-events-none select-none scale-95" 
-            style={{ 
-              left: dragStartPos.x, 
-              top: dragStartPos.y, 
-              width: 112, 
+          <div
+            className="absolute opacity-25 pointer-events-none select-none scale-95"
+            style={{
+              left: dragStartPos.x,
+              top: dragStartPos.y,
+              width: 112,
               height: 96,
               zIndex: 5
             }}
           >
             <div className="relative flex flex-col items-center w-full h-full">
               <svg width="112" height="96" viewBox="0 0 112 96" className="overflow-visible">
-                <path 
-                  d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <path
+                  d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z"
+                  fill="none"
+                  stroke="currentColor"
                   className="text-slate-450 dark:text-slate-500"
-                  strokeWidth="2" 
+                  strokeWidth="2"
                   strokeDasharray="5 5"
                 />
               </svg>
@@ -907,13 +907,13 @@ export default function ProjBuild() {
           const isHoveredTarget = hoveredTargetId === node.id;
 
           return (
-            <div 
-              key={node.id} 
+            <div
+              key={node.id}
               className={`absolute transition-all duration-100 ${isDragged ? 'opacity-50 select-none pointer-events-none' : ''}`}
-              style={{ 
-                left: node.x, 
-                top: node.y, 
-                width: 112, 
+              style={{
+                left: node.x,
+                top: node.y,
+                width: 112,
                 height: 96,
                 zIndex: isDragged ? 50 : 10
               }}
@@ -922,10 +922,10 @@ export default function ProjBuild() {
                 {node.type === 'section' && (
                   <span className="text-[0.5625rem] text-slate-500 dark:text-slate-400 font-bold mb-1 uppercase tracking-wider absolute -top-5 whitespace-nowrap">EXEC: {node.exec}</span>
                 )}
-                
+
                 {/* Hexagonal Node Design */}
-                <svg 
-                  width="112" height="96" viewBox="0 0 112 96" 
+                <svg
+                  width="112" height="96" viewBox="0 0 112 96"
                   className={`overflow-visible ${isDragged ? 'cursor-grabbing' : 'cursor-default drop-shadow-lg'}`}
                   onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                   onDoubleClick={(e) => {
@@ -933,17 +933,17 @@ export default function ProjBuild() {
                     handleEditNode(e, node.id);
                   }}
                 >
-                  <path 
-                    d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z" 
-                    fill={`url(#grad-${node.type})`} 
-                    filter={isHoveredTarget ? "url(#glow-highlight)" : "url(#glow)"} 
-                    opacity={isDragged ? "0.45" : (isHoveredTarget ? "0.9" : "0.7")} 
+                  <path
+                    d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z"
+                    fill={`url(#grad-${node.type})`}
+                    filter={isHoveredTarget ? "url(#glow-highlight)" : "url(#glow)"}
+                    opacity={isDragged ? "0.45" : (isHoveredTarget ? "0.9" : "0.7")}
                   />
-                  <path 
-                    d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z" 
-                    fill="none" 
-                    stroke={isDragged ? "rgba(255,255,255,0.4)" : (isHoveredTarget ? "#fbbf24" : "rgba(255,255,255,0.3)")} 
-                    strokeWidth={isHoveredTarget ? "3" : "1"} 
+                  <path
+                    d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z"
+                    fill="none"
+                    stroke={isDragged ? "rgba(255,255,255,0.4)" : (isHoveredTarget ? "#fbbf24" : "rgba(255,255,255,0.3)")}
+                    strokeWidth={isHoveredTarget ? "3" : "1"}
                     strokeDasharray={isDragged ? "4 4" : "none"}
                   />
                 </svg>
@@ -954,14 +954,14 @@ export default function ProjBuild() {
                 </div>
 
                 {/* Plus add child node button */}
-                <button 
+                <button
                   onMouseDown={e => e.stopPropagation()}
                   onClick={() => {
                     let targetType: 'tab' | 'section' | 'row' = 'tab';
                     if (node.type === 'tab') targetType = 'section';
                     if (node.type === 'section') targetType = 'row';
                     setPromptModal({ isOpen: true, type: targetType, title: `Create New ${targetType}`, targetParent: node.id });
-                  }} 
+                  }}
                   className={`absolute top-0 right-0 -mr-2 -mt-1 w-5 h-5 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-lg z-20 hover:bg-slate-100 dark:hover:bg-slate-600 transition-all cursor-pointer ${isNodeDragging ? 'hidden' : ''}`}
                   title={`Add ${node.type === 'project' ? 'Tab' : node.type === 'tab' ? 'Section' : 'Instruction Row'}`}
                 >
@@ -972,22 +972,22 @@ export default function ProjBuild() {
               {/* Rows List (Only for Section Nodes) */}
               {node.type === 'section' && node.rows && (
                 <div className="absolute top-[102px] left-1/2 -translate-x-1/2 flex items-center gap-1">
-                  <div 
-                    onDoubleClick={(e) => { e.stopPropagation(); handleOpenGroupModal(node.id); }} 
+                  <div
+                    onDoubleClick={(e) => { e.stopPropagation(); handleOpenGroupModal(node.id); }}
                     onDragOver={handleCanvasDragOver}
                     onDrop={(e) => handleCanvasDrop(e, node.id)}
                     className="bg-white/95 dark:bg-[#121824]/95 pt-1 px-1 pb-4 rounded-xl border border-slate-200 dark:border-slate-800/80 min-w-[13.75rem] shadow-2xl hover:border-slate-350 dark:hover:border-slate-700 transition-colors"
                   >
                     <div className="space-y-0.5 min-h-[1.875rem] flex flex-col">
                       {node.rows.map((row, rowIndex) => (
-                        <div 
-                          key={row.id} 
+                        <div
+                          key={row.id}
                           draggable
                           onDragStart={(e) => handleCanvasDragStart(e, node.id, rowIndex)}
                           onDragEnd={handleCanvasDragEnd}
                           onDragOver={handleCanvasDragOver}
                           onDrop={(e) => handleCanvasDrop(e, node.id, rowIndex)}
-                          onDoubleClick={(e) => handleEditRow(e, row)} 
+                          onDoubleClick={(e) => handleEditRow(e, row)}
                           className={`flex items-stretch bg-slate-100 dark:bg-[#1f293d] border border-slate-200 dark:border-slate-800 h-6 rounded-md text-[0.5625rem] font-bold text-slate-750 dark:text-slate-300 shadow-sm overflow-hidden group hover:brightness-105 cursor-grab active:cursor-grabbing transition-opacity ${canvasDraggedItem?.secId === node.id && canvasDraggedItem?.rowIndex === rowIndex ? 'opacity-40 border-2 border-dashed border-slate-400' : ''}`}
                         >
                           {row.label && (
@@ -1025,8 +1025,8 @@ export default function ProjBuild() {
             <div className="p-4 space-y-3">
               <div>
                 <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Name (Max 12 chars)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={newItemName}
                   onChange={(e) => {
                     if (e.target.value.length <= 12) setNewItemName(e.target.value);
@@ -1036,11 +1036,11 @@ export default function ProjBuild() {
                   autoFocus
                 />
               </div>
-              
+
               {promptModal.type === 'section' && (
                 <div>
                   <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Execution Mode</label>
-                  <select 
+                  <select
                     value={executionMode}
                     onChange={(e) => setExecutionMode(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
@@ -1050,9 +1050,9 @@ export default function ProjBuild() {
                     <option value="Once">Once = One time only</option>
                     <option value="Manual">Manual = Request number</option>
                   </select>
-                  
+
                   {executionMode === 'Manual' && (
-                    <input 
+                    <input
                       type="number"
                       value={manualReqNumber}
                       onChange={(e) => setManualReqNumber(e.target.value)}
@@ -1065,17 +1065,17 @@ export default function ProjBuild() {
             </div>
 
             <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#070b11] flex justify-end gap-2 shrink-0">
-              <button 
-                onClick={() => { setPromptModal({ isOpen: false, type: '', title: '', targetParent: null }); setNewItemName(''); setManualReqNumber(''); }} 
+              <button
+                onClick={() => { setPromptModal({ isOpen: false, type: '', title: '', targetParent: null }); setNewItemName(''); setManualReqNumber(''); }}
                 className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
               >
                 Cancel
               </button>
-              <button 
-                onClick={() => { 
+              <button
+                onClick={() => {
                   const parentNode = nodes[promptModal.targetParent!];
                   const newId = `${promptModal.type}_${Date.now()}`;
-                  
+
                   setNodes(prev => {
                     const next = JSON.parse(JSON.stringify(prev));
                     if (promptModal.type === 'tab') {
@@ -1089,10 +1089,10 @@ export default function ProjBuild() {
                     return next;
                   });
 
-                  setPromptModal({ isOpen: false, type: '', title: '', targetParent: null }); 
-                  setNewItemName(''); 
+                  setPromptModal({ isOpen: false, type: '', title: '', targetParent: null });
+                  setNewItemName('');
                   setManualReqNumber('');
-                }} 
+                }}
                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 disabled={(promptModal.type !== 'row' && !newItemName.trim()) || (promptModal.type === 'section' && executionMode === 'Manual' && !manualReqNumber.trim())}
               >
@@ -1109,7 +1109,7 @@ export default function ProjBuild() {
         const nodeType = node?.type || 'section';
         const typeLabel = nodeType === 'project' ? 'Project' : nodeType === 'tab' ? 'Tab' : 'Section';
         const hasChildren = editNodeModal.nodeId ? nodeHasChildren(editNodeModal.nodeId) : false;
-        
+
         return (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -1120,23 +1120,23 @@ export default function ProjBuild() {
               <div className="p-4 space-y-3">
                 <div>
                   <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Name (Max 12 chars)</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={editNodeModal.name}
                     onChange={(e) => {
-                      if (e.target.value.length <= 12) setEditNodeModal(prev => ({...prev, name: e.target.value}));
+                      if (e.target.value.length <= 12) setEditNodeModal(prev => ({ ...prev, name: e.target.value }));
                     }}
                     className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                     autoFocus
                   />
                 </div>
-                
+
                 {nodeType === 'section' && (
                   <div>
                     <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Execution Mode</label>
-                    <select 
+                    <select
                       value={editNodeModal.exec}
-                      onChange={(e) => setEditNodeModal(prev => ({...prev, exec: e.target.value}))}
+                      onChange={(e) => setEditNodeModal(prev => ({ ...prev, exec: e.target.value }))}
                       className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                     >
                       <option value="0">0 = Immediately</option>
@@ -1144,12 +1144,12 @@ export default function ProjBuild() {
                       <option value="Once">Once = One time only</option>
                       <option value="Manual">Manual = Request number</option>
                     </select>
-                    
+
                     {editNodeModal.exec === 'Manual' && (
-                      <input 
+                      <input
                         type="number"
                         value={editNodeModal.manualReq}
-                        onChange={(e) => setEditNodeModal(prev => ({...prev, manualReq: e.target.value}))}
+                        onChange={(e) => setEditNodeModal(prev => ({ ...prev, manualReq: e.target.value }))}
                         placeholder="Enter manual request offset"
                         className="w-full mt-2 bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none shadow-sm"
                       />
@@ -1159,28 +1159,27 @@ export default function ProjBuild() {
               </div>
 
               <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-between items-center shrink-0">
-                <button 
+                <button
                   onClick={hasChildren ? undefined : deleteNode}
                   disabled={hasChildren}
-                  className={`p-2 rounded-lg transition-colors ${
-                    hasChildren 
-                      ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40' 
-                      : 'text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer'
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${hasChildren
+                    ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40'
+                    : 'text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer'
+                    }`}
                   title={hasChildren ? `Cannot delete ${nodeType} with children` : `Delete ${typeLabel}`}
                 >
                   <Trash2 size={16} />
                 </button>
-                
+
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => setEditNodeModal({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' })} 
+                  <button
+                    onClick={() => setEditNodeModal({ isOpen: false, nodeId: null, name: '', exec: '0', manualReq: '' })}
                     className="px-3 py-1.5 border border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
-                  <button 
-                    onClick={saveEditNode} 
+                  <button
+                    onClick={saveEditNode}
                     className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     disabled={!editNodeModal.name.trim() || (nodeType === 'section' && editNodeModal.exec === 'Manual' && !editNodeModal.manualReq.trim())}
                   >
@@ -1203,7 +1202,7 @@ export default function ProjBuild() {
 
             <div className="p-4 space-y-1.5 overflow-y-auto flex-1">
               {modalRows.map((row, index) => (
-                <div 
+                <div
                   key={row.id}
                   draggable
                   onDragStart={() => handleDragStart(index)}
@@ -1215,23 +1214,23 @@ export default function ProjBuild() {
                   <div className="cursor-grab active:cursor-grabbing text-slate-400 dark:text-slate-600 group-hover:text-slate-500 p-1 shrink-0" title="Drag to reorder">
                     <GripVertical size={14} />
                   </div>
-                  
+
                   <span className="text-slate-400 text-[0.625rem] w-4 text-right font-mono select-none">{index + 1}.</span>
-                  <input 
-                    type="text" 
-                    value={row.label} 
+                  <input
+                    type="text"
+                    value={row.label}
                     onChange={(e) => updateRow(index, 'label', e.target.value)}
-                    className="w-1/4 bg-white dark:bg-[#0a0f18] border border-slate-300 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm" 
-                    placeholder="Row label" 
+                    className="w-1/4 bg-white dark:bg-[#0a0f18] border border-slate-300 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
+                    placeholder="Row label"
                   />
-                  <input 
-                    type="text" 
-                    value={row.command} 
+                  <input
+                    type="text"
+                    value={row.command}
                     onChange={(e) => updateRow(index, 'command', e.target.value)}
-                    className="flex-1 bg-white dark:bg-[#0a0f18] border border-slate-300 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-mono shadow-sm" 
+                    className="flex-1 bg-white dark:bg-[#0a0f18] border border-slate-300 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-mono shadow-sm"
                     placeholder="Instruction mapping (e.g. PT0[LED_P8, 1000])"
                   />
-                  
+
                   <button onClick={() => removeRow(index)} className="text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors cursor-pointer" title="Delete Row">
                     <Trash2 size={15} />
                   </button>
@@ -1262,22 +1261,22 @@ export default function ProjBuild() {
             <div className="py-2.5 px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#070b11] shrink-0">
               <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Deep Property Inspection</h2>
             </div>
-            
+
             <div className="p-4 flex flex-col gap-4 flex-1 overflow-y-auto min-h-0">
-              
+
               <div className="grid grid-cols-2 gap-4 shrink-0">
                 <div>
                   <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Row Label</label>
-                  <input 
-                    type="text" 
-                    value={editRowData.label} 
-                    onChange={e => setEditRowData({...editRowData, label: e.target.value})}
-                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm" 
+                  <input
+                    type="text"
+                    value={editRowData.label}
+                    onChange={e => setEditRowData({ ...editRowData, label: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs focus:border-blue-500 outline-none font-semibold shadow-sm"
                   />
                 </div>
                 <div>
                   <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Target Command Prototype</label>
-                  <select 
+                  <select
                     value={editRowData.command}
                     onChange={e => {
                       const newCmd = e.target.value;
@@ -1298,7 +1297,7 @@ export default function ProjBuild() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-[300px]">
-                
+
                 {/* Left panel inside modal */}
                 <div className="flex flex-col gap-3 min-h-0">
                   <div className="bg-slate-50 dark:bg-[#0a0f18]/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 shrink-0 shadow-inner">
@@ -1313,12 +1312,12 @@ export default function ProjBuild() {
                       <label className="block text-[0.5625rem] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider select-none shrink-0">Available Peripheral Pin Macros</label>
                       <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-24 content-start pr-1">
                         {pinMacros.map(pin => (
-                          <button 
-                            key={pin} 
+                          <button
+                            key={pin}
                             onClick={() => {
                               const newArgs = [...editRowData.args];
-                              if (newArgs.length > 0) newArgs[0] = pin; 
-                              setEditRowData({...editRowData, args: newArgs});
+                              if (newArgs.length > 0) newArgs[0] = pin;
+                              setEditRowData({ ...editRowData, args: newArgs });
                             }}
                             className="bg-white dark:bg-[#1a2434] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[0.5625rem] font-mono px-2 py-1 rounded-md border border-slate-300 dark:border-slate-800 transition-colors shadow-sm cursor-pointer"
                           >
@@ -1346,12 +1345,12 @@ export default function ProjBuild() {
                             return <span className="text-[0.5625rem] text-slate-400 italic select-none">No labels defined in the workflow rows yet.</span>;
                           }
                           return labelsArray.map(lbl => (
-                            <button 
-                              key={lbl} 
+                            <button
+                              key={lbl}
                               onClick={() => {
                                 const newArgs = [...editRowData.args];
                                 if (newArgs.length > 1) newArgs[1] = lbl;
-                                setEditRowData({...editRowData, args: newArgs});
+                                setEditRowData({ ...editRowData, args: newArgs });
                               }}
                               className="bg-white dark:bg-[#1a2434] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[0.5625rem] font-mono px-2 py-1 rounded-md border border-slate-300 dark:border-slate-800 transition-colors shadow-sm cursor-pointer"
                             >
@@ -1384,8 +1383,8 @@ export default function ProjBuild() {
                 >
                   {(
                     [['args', 'Args Limit (X)', currentX],
-                     ['ints', 'Internal Vars (Y)', currentY],
-                     ['rets', 'Returns (Z)', currentZ]
+                    ['ints', 'Internal Vars (Y)', currentY],
+                    ['rets', 'Returns (Z)', currentZ]
                     ] as [string, string, number][]
                   ).map(([key, label, val]) => {
                     const isActive = selectedStatRow === key;
@@ -1393,18 +1392,16 @@ export default function ProjBuild() {
                       <div
                         key={key}
                         onClick={() => setSelectedStatRow(key as 'args' | 'ints' | 'rets')}
-                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg border cursor-pointer transition-all ${
-                          isActive
-                            ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-800'
-                            : 'bg-white dark:bg-[#121824] border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                        }`}
+                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg border cursor-pointer transition-all ${isActive
+                          ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-800'
+                          : 'bg-white dark:bg-[#121824] border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                          }`}
                       >
                         <span className={`transition-colors ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{label}</span>
-                        <div className={`w-12 border text-center rounded-md py-0.5 text-[0.625rem] font-mono font-bold shadow-sm transition-colors ${
-                          isActive
-                            ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
-                            : 'bg-slate-50 dark:bg-[#0a0f18] border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200'
-                        }`}>{val}</div>
+                        <div className={`w-12 border text-center rounded-md py-0.5 text-[0.625rem] font-mono font-bold shadow-sm transition-colors ${isActive
+                          ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                          : 'bg-slate-50 dark:bg-[#0a0f18] border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200'
+                          }`}>{val}</div>
                       </div>
                     );
                   })}
@@ -1421,10 +1418,10 @@ export default function ProjBuild() {
                       return Array.from({ length: currentCount }).map((_, i) => {
                         const actualIdx = currentStartIndex + i;
                         const val = editRowData.args[actualIdx] || '';
-                        
-                        let varName = `${currentLabelPrefix}${i+1}`;
+
+                        let varName = `${currentLabelPrefix}${i + 1}`;
                         let varType = 'int8';
-                        
+
                         if (cmdDetailsObj) {
                           if (selectedStatRow === 'args') {
                             const argInfo = cmdDetailsObj.args[i];
@@ -1446,7 +1443,7 @@ export default function ProjBuild() {
                             }
                           }
                         }
-                        
+
                         if (selectedStatRow !== 'args') {
                           return (
                             <div key={i} className="flex items-center justify-between bg-white dark:bg-[#121824] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
@@ -1465,15 +1462,15 @@ export default function ProjBuild() {
                           <div key={i} className="flex items-center gap-2 bg-white dark:bg-[#121824] p-1 rounded-lg border border-slate-200 dark:border-slate-800/50 shadow-sm">
                             <span className="text-slate-400 dark:text-slate-500 text-[0.625rem] w-24 truncate font-mono select-none" title={varName}>{varName}</span>
                             <span className="text-orange-550 dark:text-orange-400 text-[0.5625rem] w-12 font-mono font-bold select-none truncate" title={varType}>{varType}</span>
-                            <input 
-                              type="text" 
-                              value={val} 
+                            <input
+                              type="text"
+                              value={val}
                               onChange={e => {
                                 const newArgs = [...editRowData.args];
                                 newArgs[actualIdx] = e.target.value;
-                                setEditRowData({...editRowData, args: newArgs});
+                                setEditRowData({ ...editRowData, args: newArgs });
                               }}
-                              className="flex-1 bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-md p-1 text-xs focus:border-blue-500 outline-none font-mono" 
+                              className="flex-1 bg-slate-50 dark:bg-[#0a0f18] border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-md p-1 text-xs focus:border-blue-500 outline-none font-mono"
                             />
                           </div>
                         );
@@ -1491,14 +1488,14 @@ export default function ProjBuild() {
             </div>
 
             <div className="py-2.5 px-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0a0f18]/30 flex justify-between items-center shrink-0">
-              <button 
+              <button
                 onClick={() => deleteRowFromDeepModal(editRowData.id)}
                 className="p-2 rounded-lg text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-800"
                 title="Delete Row"
               >
                 <Trash2 size={16} />
               </button>
-              
+
               <div className="flex gap-2">
                 <button onClick={() => {
                   setShowEditRowModal(false);
