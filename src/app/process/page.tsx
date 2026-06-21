@@ -132,34 +132,33 @@ export default function ProcessView() {
       const resultSections = [];
       
       const sections = Object.values(nodes).filter(n => n.parentId === tab.id && n.type === 'section');
+      let secIdx = 1;
       for (const sec of sections) {
         const secAddress = addressTracker;
         const resultRows = [];
         
         if (sec.rows) {
+          let rowIdx = 1;
           for (const row of sec.rows) {
-            const rowAddress = addressTracker;
-            const hexLines = getCompiledHex(row);
-            const allBytesStr = hexLines.map(line => line.bytes).join(' ');
-            
             resultRows.push({
-              id: row.id,
+              id: rowIdx,
               label: row.label || '',
               command: row.command,
-              composeRowView: getComposedRowString(row),
-              bytes: allBytesStr
+              composeRowView: getComposedRowString(row)
             });
             
+            rowIdx++;
             addressTracker += 48;
           }
         }
         
         resultSections.push({
-          id: sec.id,
+          id: `sec_${secIdx}`,
           name: sec.name,
           exec: sec.exec,
           rows: resultRows
         });
+        secIdx++;
       }
       
       resultTabs.push({
