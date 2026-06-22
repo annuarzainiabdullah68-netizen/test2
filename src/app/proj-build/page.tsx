@@ -840,25 +840,51 @@ export default function ProjBuild() {
       >
         <svg id="edges-svg" className="absolute top-0 left-0 overflow-visible pointer-events-none" style={{ width: '100%', height: '100%' }}>
           <defs>
+            {/* Inner bright gradients */}
             <linearGradient id="grad-project" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#60a5fa" />
-              <stop offset="100%" stopColor="#2563eb" />
+              <stop offset="0%" stopColor="#93c5fd" />
+              <stop offset="100%" stopColor="#3b82f6" />
             </linearGradient>
             <linearGradient id="grad-tab" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#fb7185" />
-              <stop offset="100%" stopColor="#e11d48" />
+              <stop offset="0%" stopColor="#fc6b80" />
+              <stop offset="100%" stopColor="#d01035" />
             </linearGradient>
             <linearGradient id="grad-section" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#34d399" />
-              <stop offset="100%" stopColor="#059669" />
+              <stop offset="0%" stopColor="#4ade80" />
+              <stop offset="100%" stopColor="#16a34a" />
             </linearGradient>
-            <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="5" result="blur" />
+            <linearGradient id="grad-row" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#d97706" />
+            </linearGradient>
+            {/* Outer dark frame gradients (gives 3D raised look) */}
+            <linearGradient id="grad-outer-project" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#1e40af" />
+              <stop offset="100%" stopColor="#0f2060" />
+            </linearGradient>
+            <linearGradient id="grad-outer-tab" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#881337" />
+              <stop offset="100%" stopColor="#4c0519" />
+            </linearGradient>
+            <linearGradient id="grad-outer-section" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#14532d" />
+              <stop offset="100%" stopColor="#052e16" />
+            </linearGradient>
+            <linearGradient id="grad-outer-row" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#92400e" />
+              <stop offset="100%" stopColor="#451a03" />
+            </linearGradient>
+            {/* Glow filters */}
+            <filter id="glow" x="-35%" y="-35%" width="170%" height="170%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
-            <filter id="glow-highlight" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="8" result="blur" />
+            <filter id="glow-highlight" x="-35%" y="-35%" width="170%" height="170%">
+              <feGaussianBlur stdDeviation="10" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+            <filter id="node-drop-shadow" x="-25%" y="-25%" width="150%" height="165%">
+              <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="rgba(0,0,0,0.55)" />
             </filter>
           </defs>
 
@@ -938,34 +964,62 @@ export default function ProjBuild() {
                   <span className="text-[0.5625rem] text-slate-500 dark:text-slate-400 font-bold mb-1 uppercase tracking-wider absolute -top-5 whitespace-nowrap">EXEC: {node.exec}</span>
                 )}
 
-                {/* Hexagonal Node Design */}
+                {/* Hexagonal Node — layered 3D design */}
                 <svg
                   width="112" height="96" viewBox="0 0 112 96"
-                  className={`overflow-visible ${isDragged ? 'cursor-grabbing' : 'cursor-default drop-shadow-lg'}`}
+                  className={`overflow-visible ${isDragged ? 'cursor-grabbing' : 'cursor-default'}`}
+                  style={{ filter: isDragged ? 'none' : 'url(#node-drop-shadow)' }}
                   onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                   onDoubleClick={(e) => {
                     e.stopPropagation();
                     handleEditNode(e, node.id);
                   }}
                 >
+                  {/* Layer 1: Dark base offset downward for 3D depth */}
                   <path
                     d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z"
+                    fill={`url(#grad-outer-${node.type})`}
+                    transform="translate(0, 5)"
+                    opacity="0.9"
+                  />
+                  {/* Layer 2: Outer dark hex (frame / bevel) */}
+                  <path
+                    d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z"
+                    fill={`url(#grad-outer-${node.type})`}
+                    opacity={isDragged ? 0.5 : 1}
+                  />
+                  {/* Layer 3: Inner bright hex (main color) */}
+                  <path
+                    d="M 32 11 L 80 11 L 100 48 L 80 85 L 32 85 L 12 48 Z"
                     fill={`url(#grad-${node.type})`}
-                    filter={isHoveredTarget ? "url(#glow-highlight)" : "url(#glow)"}
-                    opacity={isDragged ? "0.45" : (isHoveredTarget ? "0.9" : "0.7")}
+                    opacity={isDragged ? 0.55 : 1}
                   />
+                  {/* Layer 4: Inner white highlight stroke */}
                   <path
-                    d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z"
+                    d="M 32 11 L 80 11 L 100 48 L 80 85 L 32 85 L 12 48 Z"
                     fill="none"
-                    stroke={isDragged ? "rgba(255,255,255,0.4)" : (isHoveredTarget ? "#fbbf24" : "rgba(255,255,255,0.3)")}
-                    strokeWidth={isHoveredTarget ? "3" : "1"}
-                    strokeDasharray={isDragged ? "4 4" : "none"}
+                    stroke="rgba(255,255,255,0.38)"
+                    strokeWidth="1.5"
                   />
+                  {/* Hover: amber ring on outer hex */}
+                  {isHoveredTarget && (
+                    <path
+                      d="M 28 4 L 84 4 L 108 48 L 84 92 L 28 92 L 4 48 Z"
+                      fill="none"
+                      stroke="#fbbf24"
+                      strokeWidth="3"
+                    />
+                  )}
                 </svg>
 
-                {/* Node Label Text */}
-                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-[#161b24] border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded shadow-md text-slate-800 dark:text-white font-bold text-[0.5625rem] whitespace-nowrap pointer-events-none uppercase tracking-wide ${isDragged ? 'opacity-70' : ''}`}>
-                  {node.name}
+                {/* Wide dark label band — extends beyond hex width */}
+                <div
+                  className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none ${isDragged ? 'opacity-60' : ''}`}
+                  style={{ width: '164px' }}
+                >
+                  <div className="bg-[#080e1e]/82 backdrop-blur-sm px-4 py-1.5 rounded-lg text-white font-bold text-[0.625rem] uppercase tracking-widest text-center whitespace-nowrap overflow-hidden text-ellipsis shadow-lg border border-white/5">
+                    {node.name}
+                  </div>
                 </div>
 
                 {/* Plus add child node button */}
