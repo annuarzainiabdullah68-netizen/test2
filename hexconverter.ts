@@ -198,6 +198,9 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
   // retAddressMap: row.label → absolute address of that row's rets slot
   // Formula: startAddr + retsStart  (= row_base_addr + offset_to_rets)
   const retAddressMap: Record<string, number> = {};
+  // pendingPatches: * arg slots that need the resolved address written after all rows are compiled
+  // Two-pass needed because a * arg may reference a row compiled LATER (forward reference)
+  const pendingPatches: { index: number; label: string }[] = [];
 
   // --- Project Header ---
   buf.align(2);
@@ -301,9 +304,10 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
                         break;
                       case '*': {
                         buf.align(2);
-                        // Resolve pointer: look up the rets address of the referenced row label
-                        const ptrLabel = String(resolvedVal).trim();
-                        buf.pushUInt16(retAddressMap[ptrLabel] ?? 0);
+                        // Write 0x0000 placeholder; real address is patched after all rows are compiled
+                        const patchIndex = buf.buffer.length;
+                        buf.pushUInt16(0);
+                        pendingPatches.push({ index: patchIndex, label: String(resolvedVal).trim() });
                         break;
                       }
                       default: buf.pushUInt8(Number(resolvedVal) || 0); break;
@@ -360,6 +364,12 @@ export const compileBytecode = (mainJson: any, cmdReg: CmdDef[], pinReg: PinDef[
   // Evaluate RLen and patch current Project Header
   const projLen = buf.buffer.length - projIdx;
   buf.patchUInt16(projIdx, 0x0000 | (projLen & 0x3FFF));
+
+  // Second pass: resolve all * pointer placeholders now that retAddressMap is fully populated
+  pendingPatches.forEach(({ index, label }) => {
+    const addr = retAddressMap[label] ?? 0;
+    buf.patchUInt16(index, addr);
+  });
 
   return {
     prog: new Uint8Array(buf.buffer),

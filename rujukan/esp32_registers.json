@@ -217,43 +217,43 @@
       "x": 3,
       "y": 4,
       "z": 1,
-      "desc": "Pulse Counter",
+      "desc": "    // Usage Signature: PCN(SourcePointer, IdleLevel, GuardTimeMs)\n    // Script Template: Mode:<int8>PCN(<* S1><idle level><guard>)<state><active><cnt><time>",
       "args": [
         {
-          "type": "int8",
-          "name": "arg_0"
+          "type": "*",
+          "name": "look"
         },
         {
           "type": "int8",
-          "name": "arg_1"
+          "name": "idleLevel"
         },
         {
-          "type": "int8",
-          "name": "arg_2"
+          "type": "int16",
+          "name": "guardTime"
         }
       ],
       "ints": [
         {
           "type": "int8",
-          "name": "int_0"
+          "name": "state"
         },
         {
           "type": "int8",
-          "name": "int_1"
+          "name": "active"
         },
         {
-          "type": "int8",
-          "name": "int_2"
+          "type": "int16",
+          "name": "count"
         },
         {
-          "type": "int8",
-          "name": "int_3"
+          "type": "int32",
+          "name": "time"
         }
       ],
       "rets": [
         {
           "type": "int8",
-          "name": "ret_0"
+          "name": "count"
         }
       ]
     },
@@ -291,7 +291,7 @@
       "Cmd": "LSS",
       "x": 1,
       "y": 0,
-      "z": 0,
+      "z": 1,
       "desc": "Lateral String Storage <LSS>\n [R1]str:(lateral string). Label is optional if this row within row pool, especially if this row stack on top same cmd",
       "args": [
         {
