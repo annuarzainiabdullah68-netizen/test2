@@ -80,6 +80,9 @@ export default function ProjBuild() {
   const [lastMousePos, setLastMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
+  // dragStartCandidate: pending drag origin — drag only activates after DRAG_THRESHOLD pixels
+  const [dragStartCandidate, setDragStartCandidate] = useState<{ nodeId: string; x: number; y: number } | null>(null);
+  const DRAG_THRESHOLD = 5; // pixels
 
 
 
@@ -492,6 +495,15 @@ export default function ProjBuild() {
   const handleGlobalMouseMove = (e: React.MouseEvent) => {
     if (isPanning) {
       setPan(p => ({ x: p.x + e.clientX - lastMousePos.x, y: p.y + e.clientY - lastMousePos.y }));
+    } else if (dragStartCandidate && !isNodeDragging) {
+      // Activate drag only after mouse moves past threshold (so double-click never starts a drag)
+      const dx = e.clientX - dragStartCandidate.x;
+      const dy = e.clientY - dragStartCandidate.y;
+      if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+        setIsNodeDragging(true);
+        setDraggingNodeId(dragStartCandidate.nodeId);
+        setDragStartCandidate(null);
+      }
     } else if (isNodeDragging && draggingNodeId) {
       const dx = (e.clientX - lastMousePos.x) / scale;
       const dy = (e.clientY - lastMousePos.y) / scale;
@@ -540,8 +552,10 @@ export default function ProjBuild() {
 
   const handleNodeMouseDown = (e: React.MouseEvent, nodeId: string) => {
     e.stopPropagation();
-    setIsNodeDragging(true);
-    setDraggingNodeId(nodeId);
+    // Record the candidate drag start position but don't activate drag yet.
+    // Drag activates only if the mouse moves > DRAG_THRESHOLD px (see handleGlobalMouseMove).
+    // This allows dblclick to fire normally without being blocked by pointer-events-none.
+    setDragStartCandidate({ nodeId, x: e.clientX, y: e.clientY });
     setLastMousePos({ x: e.clientX, y: e.clientY });
     const node = nodes[nodeId];
     if (node) {
@@ -563,6 +577,7 @@ export default function ProjBuild() {
     setDraggingNodeId(null);
     setHoveredTargetId(null);
     setDragStartPos(null);
+    setDragStartCandidate(null);
   };
 
   const handleOpenGroupModal = (secId: string) => {
